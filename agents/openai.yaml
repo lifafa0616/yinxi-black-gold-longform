@@ -1,0 +1,7 @@
+interface:
+  display_name: "Yinxi Black Gold Longform"
+  short_description: "制作连续黑金中文手机长图"
+  default_prompt: "使用 $yinxi-black-gold-longform，将我提供的冻结文案和素材制作成 1080px 宽的连续手机长图。"
+
+policy:
+  allow_implicit_invocation: true
