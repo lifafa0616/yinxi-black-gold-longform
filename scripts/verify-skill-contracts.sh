@@ -1,6 +1,6 @@
 #!/bin/sh
-# Verifies that the installed black-gold Skill is self-contained and that its
-# mandatory local rule chain is present. It intentionally does not score a case.
+# Verify that this distributable Skill contains its required local rule chain.
+# POSIX tools only: no personal paths, source-project names, or rg dependency.
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
@@ -13,7 +13,7 @@ require_file() {
 }
 
 require_text() {
-  if ! rg -F -q "$2" "$ROOT/$1"; then
+  if ! grep -F -q -- "$2" "$ROOT/$1"; then
     echo "missing required marker: $1 :: $2" >&2
     exit 1
   fi
@@ -21,6 +21,9 @@ require_text() {
 
 for file in \
   SKILL.md \
+  README.md \
+  requirements.txt \
+  KNOWN-ISSUES.md \
   references/production-workflow.md \
   references/content-planning.md \
   references/daily-plan-template.md \
@@ -30,14 +33,21 @@ for file in \
   references/text-rendering-rules.md \
   references/daily-self-check.md \
   references/black-gold-system.md \
+  assets/template/render.html \
+  assets/fonts/NotoSerifCJKsc-Bold.otf \
+  assets/fonts/NotoSansCJKsc-Medium.otf \
+  assets/fonts/LICENSES.md \
   assets/baseline/baseline-notes.md \
   assets/baseline/01-hero-approved.png \
-  assets/baseline/poster-preview-approved.jpg
+  assets/baseline/poster-preview-approved.jpg \
+  scripts/render_longform.py \
+  scripts/verify-case-layout.py
 do
   require_file "$file"
 done
 
-require_text SKILL.md "日常读取路由"
+require_text SKILL.md "固定渲染命令"
+require_text SKILL.md "Playwright Chromium"
 require_text SKILL.md "配方选择索引"
 require_text references/black-gold-system.md "固定 Token"
 require_text references/black-gold-system.md "人物呈现"
@@ -46,11 +56,12 @@ require_text references/content-planning.md "阅读区签名"
 require_text references/production-workflow.md "首帧固定为 1 项 ImageGen 语义主视觉"
 require_text references/daily-self-check.md "高风险布局"
 require_text references/layout-rules.md "高风险布局 Layout Manifest"
+require_text references/layout-contracts.md "同类内容过量时的合法处理"
 
-forbidden_root='/Users/lifafa/Documents/'"Collage"
-if rg -n -F "$forbidden_root" "$ROOT"; then
-  echo "independent Skill contains a source-project path" >&2
+personal_root='/'"Users/"
+if find "$ROOT" -type f ! -path "$ROOT/.git/*" -exec grep -n -F "$personal_root" {} \; | grep -q .; then
+  echo "independent Skill contains a personal local path" >&2
   exit 1
 fi
 
-echo "verified: independent black-gold Skill rule chain is self-contained"
+echo "verified: distributable black-gold Skill rule chain is self-contained"

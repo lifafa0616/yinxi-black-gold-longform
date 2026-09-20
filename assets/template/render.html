@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=1080, initial-scale=1">
+    <title>Longform render source</title>
+    <style>
+      /* The renderer injects the bundled @font-face rules before screenshotting. */
+      :root { --canvas: #10100F; --panel: #181816; --title: #F0ECE2; --body: #94918A; --gold: #CCAA77; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--canvas); }
+      #longform-canvas { width: 1080px; min-height: 1920px; position: relative; overflow: hidden; background: var(--canvas); }
+      .longform-serif { font-family: "Yinxi Noto Serif SC", serif; font-weight: 700; }
+      .longform-sans { font-family: "Yinxi Noto Sans SC", sans-serif; font-weight: 500; }
+    </style>
+  </head>
+  <body>
+    <main id="longform-canvas" aria-label="Replace this starter canvas with the case layout."></main>
+  </body>
+</html>

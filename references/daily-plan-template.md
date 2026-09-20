@@ -49,7 +49,7 @@
 
 ```text
 连续母版：#10100F；总高度；阅读区裁切策略
-渲染真源：连续 SVG / HTML 内部源；浏览器引擎名称；正式字体加载结果；最终 PNG 是否由该引擎直接导出（是 / 否）
+渲染真源：连续 SVG / HTML 内部源；固定引擎 Playwright Chromium；正式字体加载结果；最终 PNG 是否由该引擎直接导出（是 / 否）
 孤行预检：实际 `rendered_lines` 来源；是否出现单字 / 单字符孤行；若出现，字号调整、扩宽或重排的处理记录
 批准视觉基线：已读路径；借用的质量目标；明确不复用项
 面板：#181816；启用容器 id
@@ -78,13 +78,14 @@
 transparent：visible_head_top ↔ intro_text_top ≤ 8px；visible_bbox 不得超过 related_text_region；必须在 #10100F 上确认真实透明边缘。
 source-crop：image_rect_top ↔ intro_text_top ≤ 8px；image_rect 不得超过 related_text_region；不使用透明人物的渐隐模板。
 intro_text_top 取姓名或身份信息的第一个关联文本，不能取“导师”等章节标签。
+多导师 / 人像密集：默认 source-crop；记录每位人物的关联文字块，不强制透明抠图。
 ```
 
 ### 条件附录：二维码与复杂布局
 
 ```text
-二维码：approved-source 路径 / 正方形与扫描检查；未提供则“待提供”占位。存在价格时：QR 与价格数据组的垂直对齐关系 / 不与日期时间行重叠。
-容器或高风险布局：layout-manifest.json 路径 / 验证脚本结果。
+二维码：approved-source 路径 / 正方形与扫描检查；未提供则“待提供”占位。存在价格时：CTA 数据组 id / QR 与价格的垂直对齐关系 / 不与日期时间行重叠；即使位于相邻容器也必须共用同一组 id。
+容器或高风险布局：layout-manifest.json 路径 / render-proof.json 路径 / final.png 路径 / `background_samples` 与每个阅读区连接 `seams[].sample_points` / 验证脚本结果。
 ```
 
 ## 6. 输出与日常验收
@@ -94,6 +95,7 @@ intro_text_top 取姓名或身份信息的第一个关联文本，不能取“�
 360px 预览：
 内部 SVG / HTML 源：
 渲染引擎与正式字体加载记录：
+render-proof.json：
 诊断裁片（从最终 PNG 裁出：V1 必填；命中多行卡片 / 人像 / CTA 时追加）：
 完整渲染次数：1 / 2（仅命名失败修复）
 ImageGen 次数：0 / 1 / 2（第二次必须写客观失败原因）

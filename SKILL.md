@@ -5,7 +5,7 @@ description: 从冻结中文文案、真实素材和行动信息制作 1080px �
 
 # Yinxi Black Gold Longform
 
-制作一张连续阅读的中文黑金手机长图：先识别文案的信息关系，再选择 R/L 配方、准备必要资产、以精确文字合成，并输出 1080px PNG 与 360px 预览。HTML/CSS/SVG 仅可作内部渲染源，不是交付物。
+制作一张连续阅读的中文黑金手机长图：先识别文案的信息关系，再选择 R/L 配方、准备必要资产、以精确文字合成，并输出 1080px PNG 与 360px 预览。HTML/CSS/SVG 仅可作内部连续渲染源，不是交付物；正式 PNG 一律由 Skill 内置字体和固定浏览器渲染链路导出。
 
 ## 适用边界
 
@@ -45,7 +45,32 @@ description: 从冻结中文文案、真实素材和行动信息制作 1080px �
 4. 首帧必须有一个由 ImageGen 生成、解释冻结文案对象、关系或变化的语义主视觉；真实来源资产与程序化结构可进入后续阅读区，但不得取代首帧主视觉。中段不因留白生成装饰图；分条纯文字确有区分收益时，才使用与关键词一一对应的统一 icon 组。
 5. **先验收资产，再合成整图。** 首帧主视觉先以局部资产检查语义、材质、透视、文字安静区和边界；人物先在 `#10100F` 底上检查透明边缘与可见头顶。资产不通过，不得进入整图渲染。
 6. 在同一张连续 SVG / HTML 母版上一次合成背景、资产与精确文字；不得逐帧独立铺黑底再拼接。最终 PNG 必须由已加载正式字体的同一浏览器渲染引擎直接导出，不能把 SVG 交给其他栅格化工具二次转换。
-7. 先完成静态预检；从最终 PNG 裁出 V1 首帧和所有多行卡片 / 人像 / CTA 等命中风险区的诊断图，再导出 360px 预览并执行日常验收。
+7. 使用下方固定命令导出并检查最终 PNG；从最终 PNG 裁出 V1 首帧和所有多行卡片 / 人像 / CTA 等命中风险区的诊断图，再导出 360px 预览并执行日常验收。
+
+## 固定渲染命令（不得换引擎）
+
+首次使用，在 Skill 根目录执行：
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/playwright install chromium
+```
+
+案例的连续源必须包含唯一的 `#longform-canvas`，并使用 `assets/template/render.html` 中的 `.longform-serif` / `.longform-sans` 字体类。正式导出与验证固定为：
+
+```bash
+.venv/bin/python scripts/render_longform.py \
+  --input <case>/render.html \
+  --output <case>/final.png \
+  --render-proof <case>/render-proof.json
+
+.venv/bin/python scripts/verify-case-layout.py <case>/layout-manifest.json \
+  --png <case>/final.png \
+  --render-proof <case>/render-proof.json
+```
+
+脚本会使用 Playwright Chromium 加载 `assets/fonts/` 内随 Skill 分发的 Noto CJK 字体。字体、Chromium 或画布宽度不符合要求时必须失败；不得切换系统字体、`sips`、Pillow、ImageMagick 或另一浏览器“先出一张”。
 
 ## 生产预算与停止条件
 
@@ -53,7 +78,7 @@ description: 从冻结中文文案、真实素材和行动信息制作 1080px �
 - 若该资产在局部验收中出现可见的变形透视、破损对象、烘焙文字、红黄灰边、独立矩形边界、材质粗糙或与标题关系不成立，可生成 **1 次受限替换**；这是失败修复，不是视觉探索。第二次仍不通过则标 `preflight-blocked / human-review-needed`，不能低质入图。
 - 真人不得调用 ImageGen。一次安全去背景尝试通过后用透明 PNG；失败时立即降级为原图合理裁切，并写明原因。不得为抠图反复生成或反复重试。
 - 默认完整渲染 **1 次**；仅对最终检查中已经命名的客观错误允许 **1 次**修复性完整渲染。主视觉问题必须在局部资产阶段解决，不能带入整图后再反复渲染。
-- 默认查看 360px 整图、V1 主视觉裁片，以及最多两张命中多行卡片 / 人像 / CTA 的诊断裁片；这些裁片均从最终 PNG 导出，不输出独立背景帧。`layout-manifest.json` 必须从正式浏览器渲染后导出，不能手工补写替代检查。
+- 默认查看 360px 整图、V1 主视觉裁片，以及最多两张命中多行卡片 / 人像 / CTA 的诊断裁片；这些裁片均从最终 PNG 导出，不输出独立背景帧。`layout-manifest.json` 必须从正式浏览器渲染后导出，不能手工补写替代检查；并须提供真实 PNG 的背景采样点、阅读区连接采样点与跨容器 CTA 数据组。
 - HTML/CSS/SVG 如为渲染工具所需，只保留为案例内部源；不作为交付、报告或额外版本。交付仍只有 PNG、预览和 `plan.md`。
 
 ## 状态与维护边界

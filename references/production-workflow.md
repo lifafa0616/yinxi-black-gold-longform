@@ -45,8 +45,23 @@
    - 每项局部资产在进入整图前执行主题系统规定的局部目检；失败停在资产阶段，不能用整图重渲染替代资产修复。
 4. 按已声明路径生成或准备局部视觉资产，并嵌入同一连续母版源；标题、正文、数据、价格、行动信息和二维码说明以后置精确文字排入该源。
 5. 等待正式字体完成加载；从同一个浏览器渲染树导出实际文本 bbox、实际 `rendered_lines`、容器 bbox、V1 主视觉可见 bbox 与首帧文字锚点。多行文字先按实际宽度换行并重算父容器高度；出现单字 / 单字符孤行时，先按 4px 字号梯度缩小，仍失败才扩宽或重排。任何溢出或孤行都必须在此时修复；禁止以 `overflow` 或裁切隐藏问题。
-6. 使用该浏览器引擎直接导出 `1080px` 宽最终 PNG；禁止把 SVG 交给 `sips`、Pillow、ImageMagick 或另一渲染器二次栅格化。缩略预览只能由此最终 PNG 缩放得到。SVG / HTML 为内部源，不是用户交付物。
-7. 首帧主视觉、卡片、多列、人物、章节号或其他高风险布局必须从正式浏览器渲染坐标导出 `layout-manifest.json`，并运行 `python3 scripts/verify-case-layout.py <case>/layout-manifest.json`；未通过时回到布局，不允许以 Plan 勾选替代。
+6. 使用 Skill 随附的 Playwright Chromium 与 `assets/fonts/` 内置 Noto 字体直接导出 `1080px` 宽最终 PNG。首次环境准备与每案导出命令固定为：
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/playwright install chromium
+.venv/bin/python scripts/render_longform.py --input <case>/render.html --output <case>/final.png --render-proof <case>/render-proof.json
+```
+
+渲染源须基于 `assets/template/render.html`，包含唯一的 `#longform-canvas`，并使用模板提供的正式字体类。字体未加载、画布不为 1080px 或 Chromium 不可用时必须失败；禁止静默回退系统字体。禁止把 SVG 交给 `sips`、Pillow、ImageMagick 或另一渲染器二次栅格化。缩略预览只能由此最终 PNG 缩放得到。SVG / HTML 为内部源，不是用户交付物。
+7. 首帧主视觉、卡片、多列、人物、章节号或其他高风险布局必须从正式浏览器渲染坐标导出 `layout-manifest.json`，并用同一份最终 PNG 与渲染证明运行：
+
+```bash
+.venv/bin/python scripts/verify-case-layout.py <case>/layout-manifest.json --png <case>/final.png --render-proof <case>/render-proof.json
+```
+
+Manifest 除真实浏览器坐标外，还必须记录 `background_samples`（明确未被前景覆盖的母版点）、每个阅读区连接处的 `seams[].sample_points` 与 `cta_groups`。校验器会实际打开最终 PNG 核对宽度与这些像素，不允许以 Plan 勾选或手填“背景正确”代替。
 8. 从最终 PNG 裁出 V1 主视觉诊断图；命中多行卡片、人像或 CTA 时再裁出相应诊断图。裁片只用于验收，不参与拼接，也不创建独立背景帧。
 
 `frames/` 仅可存放从最终 PNG 裁出的诊断图，不能作为独立背景来源、拼接来源或另一套渲染输出。背景、局部视觉、文字和必要的原始资产层级关系必须在 Plan 或合成记录中可追溯。

@@ -124,28 +124,31 @@ track-safe text axis x=112–968（外侧轨道 + 32px 内缩时）
 
 ## 附录：高风险布局 Layout Manifest（条件读取）
 
-只在卡片、多列、章节号、人物并列或其他高风险坐标布局中生成 `<case>/layout-manifest.json`。它必须从实际渲染坐标导出，不能凭目测补写；用于检查坐标、字体、容器与连续性，不替代主视觉语义、材质、透视或品牌审美的目视判断。
+只在卡片、多列、章节号、人物并列或其他高风险坐标布局中生成 `<case>/layout-manifest.json`。它必须从实际渲染坐标导出，不能凭目测补写；用于检查坐标、字体、容器与连续性，不替代主视觉语义、材质、透视或品牌审美的目视判断。校验时还必须读取 Playwright 直接导出的最终 PNG，不能只检查 Manifest 内部是否自洽。
 
 ```json
 {
   "canvas": {"width": 1080, "color": "#10100F"},
   "reading_zones": [{"id": "V1", "contract": "L01"}],
   "frames": [{"id": "V1", "rect": [0, 0, 1080, 1920]}],
-  "render_proof": {"engine": "browser", "fonts_ready": true, "png_direct_from_layout_engine": true},
   "hero": {"copy_anchor_bottom": 620, "copy_group_height": 280, "visible_bbox": [112, 700, 856, 760]},
   "text_blocks": [{"id": "V1-title", "role": "title", "font_size": 116, "rendered_lines": ["拆解16份大厂JD后，", "我们发现AI作品集"]}],
-  "containers": [], "protected_boxes": [], "chapters": [], "portraits": [], "seams": []
+  "background_samples": [{"point": [16, 16]}],
+  "seams": [{"sample_points": [[16, 1900]]}],
+  "cta_groups": [{"id": "signup"}],
+  "containers": [], "protected_boxes": [], "chapters": [], "portraits": []
 }
 ```
 
 | 条件对象 | 必须记录 |
 |---|---|
-| 所有案例 | `canvas`、阅读区 `Lxx` 序列、帧 rect、帧边界的 `#10100F` 采样 |
+| 所有案例 | `canvas`、阅读区 `Lxx` 序列、帧 rect、`background_samples` 与帧边界 `seams[].sample_points` 的真实 PNG 采样 |
 | 首帧 | `copy_anchor_bottom`、`copy_group_height`、主视觉实际 `visible_bbox`；不得用图片画布 bbox 代替 |
-| 渲染真源 | `render_proof.engine=browser`、正式字体已加载、最终 PNG 由同一布局引擎直接导出 |
+| 渲染真源 | 单独的 `render-proof.json`：`engine=playwright-chromium`、正式字体已加载、最终 PNG 由同一布局引擎直接导出 |
 | 换行文字 | 每个发生换行的 `title` / `module-title` / `body` 的 `rendered_lines`、实际 `font_size`；行数据从最终浏览器渲染树导出 |
 | 容器 | `id`、`rect`、`padding`、子元素 bbox / role / font_size / `rendered_lines` |
+| CTA 数据组 | `cta_groups[].id`；每个价格和 QR 子元素写同一个 `cta_group`，即使它们不在同一容器 |
 | 章节号 | bbox、`title_top`、受保护文字 bbox |
 | 人物 | `portrait_mode`、`intro_text_top`、关联文字区 top/bottom；`transparent` 记录 `visible_head_top` 与 `visible_bbox`，`source-crop` 记录 `image_rect_top` 与 `image_rect` |
 
-使用：`python3 scripts/verify-case-layout.py <case>/layout-manifest.json`。验证失败必须回到布局；渲染器无法导出真实坐标时，该案例不能写 `agent-checked`。
+使用：`.venv/bin/python scripts/verify-case-layout.py <case>/layout-manifest.json --png <case>/final.png --render-proof <case>/render-proof.json`。验证失败必须回到布局；渲染器无法导出真实坐标、真实 PNG 或渲染证明时，该案例不能写 `agent-checked`。
