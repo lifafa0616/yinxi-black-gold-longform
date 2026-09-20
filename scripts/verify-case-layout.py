@@ -13,6 +13,8 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from package_poster_html import validate_portable_document
+
 ROLE_MINIMUMS = {"title": 110, "module-title": 40, "body": 36, "price": 36, "action": 36, "meta": 26}
 CANVAS_WIDTH = 1080
 CANVAS_HEX = "#10100F"
@@ -88,11 +90,28 @@ def validate_render_proof(path, issues):
         fail(issues, "render proof engine must be playwright-chromium")
     if proof.get("fonts_ready") is not True:
         fail(issues, "render proof must confirm bundled fonts_ready")
+    if proof.get("browser_raster_from_layout_engine") is not True:
+        fail(issues, "render proof must confirm browser raster came from the layout engine")
     if proof.get("png_direct_from_layout_engine") is not True:
-        fail(issues, "render proof must confirm direct PNG export from the layout engine")
+        if proof.get("pixel_stitched") is not True or proof.get("capture_mode") != "browser-segmented-pixel-stitch":
+            fail(issues, "non-direct PNG output is only allowed for browser-segmented pixel stitching")
+    if proof.get("portable_html") is not True:
+        fail(issues, "render proof must confirm the PNG came from portable poster.html")
+    if proof.get("images_ready") is not True:
+        fail(issues, "render proof must confirm embedded images loaded")
     width = proof.get("canvas_width")
     if not isinstance(width, (int, float)) or abs(width - CANVAS_WIDTH) > 0.5:
         fail(issues, f"render proof canvas_width must be {CANVAS_WIDTH}px")
+
+
+def validate_poster_html(path, issues):
+    try:
+        proof = validate_portable_document(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        fail(issues, f"portable poster.html is invalid: {error}")
+        return
+    if proof.get("embedded_font_count") != 2:
+        fail(issues, "portable poster.html must embed both production fonts")
 
 
 def validate_pixel(rgb, location, label, issues):
@@ -183,7 +202,7 @@ def collect_cta_members(manifest, issues):
     return groups
 
 
-def validate(manifest, png_path, proof_path):
+def validate(manifest, png_path, proof_path, poster_html_path):
     issues = []
     canvas = manifest.get("canvas", {})
     if canvas.get("width") != CANVAS_WIDTH:
@@ -191,12 +210,16 @@ def validate(manifest, png_path, proof_path):
     if canvas.get("color") != CANVAS_HEX:
         fail(issues, f"canvas.color must be {CANVAS_HEX}")
     validate_render_proof(proof_path, issues)
+    validate_poster_html(poster_html_path, issues)
     validate_png(png_path, manifest, issues)
 
     hero = manifest.get("hero")
     if not isinstance(hero, dict):
         fail(issues, "hero must record the V1 visible geometry")
     else:
+        strategy = hero.get("strategy")
+        if strategy not in {"imagegen", "mentor-portrait"}:
+            fail(issues, "hero.strategy must be imagegen or mentor-portrait")
         anchor, copy_height = hero.get("copy_anchor_bottom"), hero.get("copy_group_height")
         visible = rect(hero.get("visible_bbox"), "hero.visible_bbox", issues)
         if not isinstance(anchor, (int, float)) or not isinstance(copy_height, (int, float)) or copy_height < 0 or not visible:
@@ -239,11 +262,6 @@ def validate(manifest, png_path, proof_path):
         for contract, count in Counter(contracts).items():
             if count > 2:
                 fail(issues, f"{contract} appears {count} times; maximum is 2")
-
-    for index, frame in enumerate(manifest.get("frames", [])):
-        frame_rect = rect(frame.get("rect") if isinstance(frame, dict) else None, f"frames[{index}].rect", issues)
-        if frame_rect and frame_rect[2] != CANVAS_WIDTH:
-            fail(issues, f"frames[{index}].rect width must be {CANVAS_WIDTH}")
 
     for index, container in enumerate(manifest.get("containers", [])):
         if not isinstance(container, dict):
@@ -300,8 +318,8 @@ def validate(manifest, png_path, proof_path):
             fail(issues, f"portraits[{index}] must be an object")
             continue
         mode, intro_top, region = portrait.get("portrait_mode"), portrait.get("intro_text_top"), portrait.get("related_text_region")
-        if mode not in {"transparent", "source-crop"}:
-            fail(issues, f"portraits[{index}].portrait_mode must be transparent or source-crop")
+        if mode not in {"transparent", "masked", "source-crop"}:
+            fail(issues, f"portraits[{index}].portrait_mode must be transparent, masked or source-crop")
             continue
         if not isinstance(intro_top, (int, float)) or not isinstance(region, dict):
             fail(issues, f"portraits[{index}] requires intro_text_top and related_text_region")
@@ -329,18 +347,19 @@ def main():
     parser.add_argument("manifest", type=Path, help="layout-manifest.json exported after browser rendering")
     parser.add_argument("--png", required=True, type=Path, help="final PNG from render_longform.py")
     parser.add_argument("--render-proof", required=True, type=Path, help="renderer-produced render-proof.json")
+    parser.add_argument("--poster-html", required=True, type=Path, help="formal self-contained poster.html")
     args = parser.parse_args()
     try:
         manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         print(f"cannot read manifest: {error}", file=sys.stderr)
         return 2
-    issues = validate(manifest, args.png, args.render_proof)
+    issues = validate(manifest, args.png, args.render_proof, args.poster_html)
     if issues:
         for issue in issues:
             print(f"invalid: {issue}", file=sys.stderr)
         return 1
-    print("verified: browser proof, final PNG dimensions, master-canvas samples and layout constraints")
+    print("verified: portable poster.html, browser proof, final PNG dimensions, master-canvas samples and layout constraints")
     return 0
 
 

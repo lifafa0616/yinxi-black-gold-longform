@@ -1,103 +1,106 @@
 # 黑金长图日常 Plan 模板
 
-复制为案例目录内的 `plan.md`。这是一页生产记录；真人、二维码、ImageGen、复杂容器只在命中时追加对应附录。
+复制为案例目录内的 `plan.md`。这是一份生产记录；它先记录待确认的文案与首帧策略，确认后才记录资产和导出。
 
-## 1. 身份与输入
+## 1. 身份、原文与事实锁定
 
 ```text
 项目名称：
 案例目录：
-状态：planning / input-blocked / preflight-blocked / approved-for-production / rendered / checked
+状态：planning / awaiting-copy-confirmation / awaiting-hero-confirmation / input-blocked / preflight-blocked / approved-for-production / rendered / checked
 审阅：not-reviewed / agent-checked / human-review-needed / human-approved
-冻结文案来源：
-必须保留的事实、数字、时间、价格、行动：
-缺失或待确认项（无则写“无”）：
+source_copy 来源：
+fact_locks（人名、日期、价格、地点、数量、CTA 等）：
+待确认或缺失项：
 ```
 
-| 源模块 ID | 原文角色 | 必须保留 | 最终阅读区 |
-|---|---|---|---|
-|  | `claim/context/explain/proof/benefit/action` | 是 | `Vx / Lxx` |
+| 源模块 ID | 原文角色 | 原文摘要 | 必须保留 | 最终阅读区 |
+|---|---|---|---|---|
+|  | `claim/context/explain/proof/benefit/action` |  | 是 / 否 | `Vx / Lxx` |
 
-## 2. 生产前放行
+## 2. 内容与营销确认稿
+
+```text
+Hero Message：
+Supporting Message：
+Proof：
+Benefits：
+CTA：
+display_copy（按阅读区）：
+用户确认文案：待确认 / 已确认；日期：
+```
+
+## 3. 首帧策略确认
+
+```text
+首帧策略：mentor-portrait / imagegen
+选择理由：
+若 mentor-portrait：人物、身份与首帧传播重点：
+若 imagegen：唯一主实体、辅助关系、文字安静区、禁止文字：
+用户确认首帧策略：待确认 / 已确认；日期：
+默认 ImageGen 预算 / 用户授权的额外范围：
+```
+
+## 4. 放行
 
 | 顺序 | 结论 | 结果 |
 |---|---|---|
-| 输入可用性：信息有去处，素材与限制明确 |  | 通过 / 阻塞 |
-| 整图叙事：`Rxx`、比例、阅读区数量成立 |  | 通过 / 阻塞 |
-| 信息关系：每段完成候选与最终 `Lxx` |  | 通过 / 阻塞 |
-| 资产可用性：真实素材、主视觉与文字安全区可用 |  | 通过 / 阻塞 |
-| 黑金系统：主题、组件与文字层级无冲突 |  | 通过 / 阻塞 |
-| 放行 |  | `approved-for-production` / `preflight-blocked` |
+| 输入可用性 |  | 通过 / 阻塞 |
+| 内容分析与事实锁定 |  | 通过 / 待确认 / 阻塞 |
+| 营销确认稿 |  | 已确认 / 待确认 |
+| 首帧策略 |  | 已确认 / 待确认 |
+| R 配方、阅读区与 L 契约 |  | 通过 / 阻塞 |
+| 资产与黑金系统 |  | 通过 / 阻塞 |
+| 放行 |  | `approved-for-production` / 其他状态 |
 
 阻塞项与下一步：
 
-## 3. 内容关系与配方选择
+## 5. 连续阅读区
 
 ```text
-比例：N × 9:16 / N × 3:4
-主叙事：Rxx
+Rxx：
 选择原因：
+连续画布：宽 1080px；高度由渲染器实测；不使用固定帧数或比例。
 ```
 
-| 区域 | 读者问题 | 核心结论 | 真实关系 | 主候选 / 备选 | 最终 Lxx | 未选原因 | 下一段衔接 |
+| 区域 | 读者问题 | 核心结论 | 真实关系 | 最终 Lxx / variant | 预计 / 实际高度 | 视觉关系 | 下一段衔接 |
 |---|---|---|---|---|---|---|---|
 | V1 |  |  |  |  |  |  |  |
 
-相邻 `Lxx` 不重复：是 / 否；任一 `Lxx` ≤ 2：是 / 否。
+相邻 `Lxx` 不重复：是 / 否；任一 `Lxx` ≤ 2 或已走合法降级：是 / 否。
 
-## 4. 黑金与母版
+## 6. 资产与人物
+
+| 资产 | 服务区域 | 路径 | 删除后失去的理解 | 主实体 / 关系映射 | 文字安全区 | 融入 / 拒绝条件 |
+|---|---|---|---|---|---|---|
+|  | `Vx/Lxx` | `approved-source/imagegen/procedural/text-render` |  |  |  |  |
 
 ```text
-连续母版：#10100F；总高度；阅读区裁切策略
-渲染真源：连续 SVG / HTML 内部源；固定引擎 Playwright Chromium；正式字体加载结果；最终 PNG 是否由该引擎直接导出（是 / 否）
-孤行预检：实际 `rendered_lines` 来源；是否出现单字 / 单字符孤行；若出现，字号调整、扩宽或重排的处理记录
-批准视觉基线：已读路径；借用的质量目标；明确不复用项
-面板：#181816；启用容器 id
-章节号：启用 / 未启用；启用区 title-top / chapter-top
-轨道与内网格：启用项 / 删除的冗余线
-主标题 signal：原文“____”
-每区额外 signal：无 / Vx 原文“____”及职责
+V1 几何：copy_anchor_bottom；copy_group_height；hero_visible_bbox；实际顶部间距；实际可见高度；hero.strategy。
 ```
 
-## 5. 资产路由
-
-| 资产 | 服务区域 | 删除后失去的理解 | 路径 | 主实体 / 辅助关系映射 | 文字安全区 | `edge_mode` / 融入 | 拒绝条件 |
-|---|---|---|---|---|---|---|---|
-|  | `Vx/Lxx` |  | `approved-source/imagegen/procedural/text-render` |  |  |  |  |
-
-- 首帧主视觉（必填）：`imagegen`；填写唯一主实体、每项辅助关系的“图元 → 冻结文案”映射、安静区、`edge_mode: native-alpha / dark-scene-canvas-mask`、禁止文字及局部验收拒绝条件。真实来源资产或程序化结构不得取代首帧主视觉。
-- 首帧几何（必填）：`copy_anchor_bottom`、`copy_group_height`、`hero_visible_bbox`、实际顶部间距、实际可见高度；按黑金系统的 `64–144px` / `max(560px, 1.2 × copy_group_height)` 关口填写。此处记录可见主体，不记录含大面积透明留白的图片画布。
-- 中段 ImageGen：默认无；仅 icon 组在图标库无法表达且有明确区分收益时可填写 1 项无文字透明同组资产。
-
-### 条件附录：人物
-
-| 人物 | 原图路径 | `portrait_mode` | 去背景尝试结果 / 降级原因 | `intro_text_top` | `visible_head_top / image_rect_top` | `visible_bbox / image_rect` 与文字区 | 母版色边缘检查 |
-|---|---|---|---|---:|---:|---|---|
+| 人物 | 原图路径 | `portrait_mode` | 介绍锚点 | 原图/透明边缘检查 | 关联文字区 | 备注 |
+|---|---|---|---|---|---|---|
+|  |  | `transparent/masked/source-crop` | `intro_text_top` |  |  |  |
 
 ```text
-transparent：visible_head_top ↔ intro_text_top ≤ 8px；visible_bbox 不得超过 related_text_region；必须在 #10100F 上确认真实透明边缘。
-source-crop：image_rect_top ↔ intro_text_top ≤ 8px；image_rect 不得超过 related_text_region；不使用透明人物的渐隐模板。
-intro_text_top 取姓名或身份信息的第一个关联文本，不能取“导师”等章节标签。
-多导师 / 人像密集：默认 source-crop；记录每位人物的关联文字块，不强制透明抠图。
+transparent：可见头顶 ↔ intro_text_top ≤ 8px；在 #10100F 上确认透明边缘。
+masked / source-crop：图片矩形顶部 ↔ intro_text_top ≤ 8px；完整保留头顶、脸和下巴。
+多导师：选择 M01 单导师 / M02 双导师 / M03 三导师 / M04 人物墙；精细抠图与像素级多人关系交由后续编辑器。
 ```
 
-### 条件附录：二维码与复杂布局
+## 7. 输出与验收
 
 ```text
-二维码：approved-source 路径 / 正方形与扫描检查；未提供则“待提供”占位。存在价格时：CTA 数据组 id / QR 与价格的垂直对齐关系 / 不与日期时间行重叠；即使位于相邻容器也必须共用同一组 id。
-容器或高风险布局：layout-manifest.json 路径 / render-proof.json 路径 / final.png 路径 / `background_samples` 与每个阅读区连接 `seams[].sample_points` / 验证脚本结果。
-```
-
-## 6. 输出与日常验收
-
-```text
-最终图：
-360px 预览：
-内部 SVG / HTML 源：
-渲染引擎与正式字体加载记录：
-render-proof.json：
-诊断裁片（从最终 PNG 裁出：V1 必填；命中多行卡片 / 人像 / CTA 时追加）：
-完整渲染次数：1 / 2（仅命名失败修复）
-ImageGen 次数：0 / 1 / 2（第二次必须写客观失败原因）
+编辑源：render.html
+正式可编辑母版：poster.html
+打包证明：poster-proof.json
+发布 PNG：final.png
+渲染证明：render-proof.json
+Layout Manifest：layout-manifest.json
+诊断裁片（来自 final.png）：
+Mobile View Check（浏览器约 1/3 比例）：
+完整导出次数：
+ImageGen 次数与理由：
 验收状态：
 ```

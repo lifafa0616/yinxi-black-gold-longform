@@ -1,88 +1,68 @@
 # 长图生产流程
 
-## 1. 读取与锁定输入
+本流程的唯一生产真源是：`1080px 连续 HTML → 自包含 poster.html → 同一 Chromium 导出 final.png`。阅读区不是固定比例帧；高度由已确认内容决定。
 
-锁定原始文案、必须逐字保留的信息、价格、时间、资源、品牌名称和行动信息。用户提供或指定的源文案不得删减、改写或省略；在 Plan 中为每个源信息模块记录最终阅读区，确保最终图逐项可见。不要在视觉阶段改写事实。
+## 1. 锁定输入与两层文案
 
-## 2. 内容规划
+先保存完整 `source_copy`，再盘点 `fact_locks`：人名、机构、品牌、产品、日期、时间、地点、价格、数量、课程次数、权益、CTA、二维码动作，以及用户要求逐字保留的内容。
 
-读取 `content-planning.md`，复制 `daily-plan-template.md` 为项目目录内的 `plan.md`，先按“生产前检查区”的顺序完成输入、叙事、阅读区、资产与视觉系统判断。任一步出现阻塞项，Plan 状态标为 `input-blocked` 或 `preflight-blocked`，回到对应步骤处理；在全部通过前，不生成局部视觉资产、不开始文字排版，也不以试图出图代替判断。
+在不改变 `fact_locks` 的前提下，分析并生成 `display_copy`：主标题、副标题、核心卖点、证据、利益点和行动信息。`display_copy` 可以压缩重复句、调整阅读顺序和提炼营销重点；它不能静默篡改事实，也不能覆盖原文来源。
 
-通过后，再拆分信息模块，决定帧数与比例，并填写整图节奏矩阵与阅读区链路。阅读区链路由 AI 根据输入文案推断，不默认逐段向用户提问；只有受众、目标或事实用途存在会明显改变叙事的歧义时，才向用户确认。该生产前检查顺序与阅读区链路目前均为待验证规则，未通过新案例复核前不得视为冻结基线。
+## 2. 先确认，再生产
 
-### 2.1 单图验证的生产预算
+复制 `daily-plan-template.md` 为案例 `plan.md`，完成输入、内容分析、营销分析、R 配方、阅读区、资产和主题判断后，输出一份用户确认稿：
 
-当目标是验证一张新长图，而非比较多套视觉方案时，Plan 必须先写明预算并按以下默认值执行：
-
-- `imagegen` 默认仅 1 项：首帧的语义主视觉；中段暂不因留白或装饰需要启动 ImageGen。
-- 完整长图默认渲染 1 次；仅在已命名的检查失败项需要修复时，允许 1 次完整修复渲染。
-- 目视检查默认查看 360px 整图预览与至多 2 个有明确问题的局部帧；不重复打开同一内容的多种缩放版本。
-- 超出上述图像生成、完整渲染或检查范围前，先在 Plan 记录具体失败项、预计收益和替代方案；需要额外产生版本时由用户确认。
-
-这不是压缩必要修复，而是阻止“先多生成几张看看”的无目标迭代；若用户明确要求探索、比较或多方案交付，以其范围为准。
-
-## 3. 配方路由与条件读取
-
-先完整阅读 `layout-recipes.md` 的“配方选择索引”，为每个阅读区记录真实关系、主候选、备选、最终 `Lxx` 与未选原因。只有 Plan 已放行为 `approved-for-production`，才读取已选 `Lxx` 在 `layout-contracts.md` 中的详细合同。
-
-卡片、多列、人物、章节号或复杂网格命中时，再读取 `layout-rules.md` 对应章节；高风险坐标布局才导出并检查 Layout Manifest。黑金 Token、稳定组件、主视觉与人物路径以 `black-gold-system.md` 为唯一依据。
-
-首帧语义主视觉为必选项：生产前必须阅读批准视觉基线，写明本案借用的“标题安静区 / 主体体量 / 材质细腻度 / 下缘融合”质量目标与不复用项；不能把基线留到复盘或升级时才打开。
-
-内容不满足契约的适用输入时，先调整内容分组或选择其他候选；不能只因画面方便而强行套用。未命中的条件规则不读取、不填写、不生产。
-
-使用 `L09 图文解读` 前，先锁定素材在保留所有必要主体、画面文字与证据后的可见比例：横图先路由到上下结构，竖图先路由到左右结构；不得先选左右分栏再通过大面积裁切把横图硬塞进去。
-
-## 4. 生成与合成
-
-生成前锁定 `1080px` 设计宽度，按内容确定高度；所有主题与案例提示词均沿用此宽度。字号、边距、内容区域与坐标按此基准规划。模型原始资产可使用其他分辨率，但必须按比例适配至母版，不能以原始资产尺寸改变设计规范。
-
-1. 先建立覆盖全部帧的一张连续 SVG / HTML 整图母版与跨帧连续结构。背景色、颗粒、底纹、栅格线、边框和轨道使用同一渲染链路，不能按帧重新生成“接近的色值”。
-2. 将连续背景、局部视觉、真实来源资产和文字准备为可追溯的独立层。黑金首帧的 3D 主视觉可作为单独生成单元，但其内容关系、文字安静区与自身下缘 alpha 收束必须在 Plan 中可追溯；不得新增投影、外发光或悬浮阴影。
-3. 为 Plan 中每项局部视觉资产记录生产路径：`approved-source`、`imagegen`、`procedural` 或 `text-render`。路径由资产承担的内容任务决定，不由留白决定；资产表须记录 `Vx / Lxx`、主实体或关系映射、文字安静区、边界处理与拒绝条件。
-   - 首帧固定为 1 项 ImageGen 语义主视觉，不能由真实来源资产或程序化结构替代；其资产验收、单主实体、辅助关系、同色融合蒙版与替换上限只执行 `black-gold-system.md`，不在本流程重复定义。
-   - 中段仅保留有真实内容任务的来源资产、程序化解释图或语义 icon；准确文字、数据、二维码、Logo、真人和严格图表沿用其对应的非 ImageGen 生产路径。icon 与真人的具体约束只执行 `black-gold-system.md`。
-   - 每项局部资产在进入整图前执行主题系统规定的局部目检；失败停在资产阶段，不能用整图重渲染替代资产修复。
-4. 按已声明路径生成或准备局部视觉资产，并嵌入同一连续母版源；标题、正文、数据、价格、行动信息和二维码说明以后置精确文字排入该源。
-5. 等待正式字体完成加载；从同一个浏览器渲染树导出实际文本 bbox、实际 `rendered_lines`、容器 bbox、V1 主视觉可见 bbox 与首帧文字锚点。多行文字先按实际宽度换行并重算父容器高度；出现单字 / 单字符孤行时，先按 4px 字号梯度缩小，仍失败才扩宽或重排。任何溢出或孤行都必须在此时修复；禁止以 `overflow` 或裁切隐藏问题。
-6. 使用 Skill 随附的 Playwright Chromium 与 `assets/fonts/` 内置 Noto 字体直接导出 `1080px` 宽最终 PNG。首次环境准备与每案导出命令固定为：
-
-```bash
-python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/playwright install chromium
-.venv/bin/python scripts/render_longform.py --input <case>/render.html --output <case>/final.png --render-proof <case>/render-proof.json
+```text
+展示主标题 / 副标题：
+核心卖点与阅读顺序：
+必须逐字保留的事实：
+首帧策略：mentor-portrait / imagegen
+若为 imagegen：主实体、辅助关系、文字安静区与默认生成预算：
+阅读区序列及 Lxx：
 ```
 
-渲染源须基于 `assets/template/render.html`，包含唯一的 `#longform-canvas`，并使用模板提供的正式字体类。字体未加载、画布不为 1080px 或 Chromium 不可用时必须失败；禁止静默回退系统字体。禁止把 SVG 交给 `sips`、Pillow、ImageMagick 或另一渲染器二次栅格化。缩略预览只能由此最终 PNG 缩放得到。SVG / HTML 为内部源，不是用户交付物。
-7. 首帧主视觉、卡片、多列、人物、章节号或其他高风险布局必须从正式浏览器渲染坐标导出 `layout-manifest.json`，并用同一份最终 PNG 与渲染证明运行：
+- 展示文案或事实锁定项尚未确认：`awaiting-copy-confirmation`。
+- 首帧策略尚未确认：`awaiting-hero-confirmation`。
+- 素材、事实或规则有缺口：`input-blocked` 或 `preflight-blocked`。
+
+上述状态下不得调用 ImageGen、处理人像、开始排版或完整导出。用户确认后才写 `approved-for-production`。
+
+## 3. 阅读区与版式
+
+按 `content-planning.md` 和 `layout-recipes.md` 选择一个 `Rxx`，再为每个阅读区选择能解释真实关系的 `Lxx`。每区记录读者问题、结论、依据、视觉关系、契约、变体和下一段衔接。
+
+阅读区可使用推荐最小/最大高度作预算，但最终高度由正式字体、实际换行和内容决定。文字过多时，优先扩高、重组或拆出新阅读区；不按 9:16 分页，不缩小字号下限，不为了填空添加装饰。
+
+## 4. 首帧与资产策略
+
+首帧必须建立唯一视觉中心。
+
+- `mentor-portrait`：导师/嘉宾身份或阵容是传播重点，且已提供可用真实人像。首帧使用确认的导师人像，不启动 ImageGen 主视觉。
+- `imagegen`：主题、方法、成果、活动体验或抽象概念是传播重点，或导师并非首帧重点。默认生成 1 项语义主视觉；若局部验收出现客观失败，允许 1 次替换。
+
+真实人物绝不由 ImageGen 改脸或重生。人物先选 `transparent / masked / source-crop`；多人场景以合适裁切和基本图文归属为止，不在 Skill 内解决像素级精修。
+
+中段仅保留承担真实内容任务的来源资产、程序化解释图或关键词一一对应的 icon。准确文字、数字、二维码、Logo、真人身份和严格图表不走 ImageGen。
+
+## 5. 连续 HTML 与正式交付
+
+1. 用 `render.html` 建立连续 1080px 宽的 HTML/CSS/SVG 编辑源；背景、网格、轨道、资产和文字都在一张画布中定位。
+2. 从浏览器实际布局树取得文字行、容器、阅读区、主视觉和高风险元素坐标，生成 `layout-manifest.json`。
+3. 执行 `package_poster_html.py`。它把本地图片、CSS 资源和内置字体嵌入单个 `poster.html`。
+4. 用 Playwright Chromium 渲染这份 `poster.html` 为 `final.png`。不能用第二套排版或字体渲染器。
+5. 对非常高的连续画布，允许同一 Chromium 从同一 DOM 分段截图；拼接只复制像素，不重新布局、重采样 SVG 或计算字体。
 
 ```bash
-.venv/bin/python scripts/verify-case-layout.py <case>/layout-manifest.json --png <case>/final.png --render-proof <case>/render-proof.json
+.venv/bin/python scripts/package_poster_html.py --input <case>/render.html --output <case>/poster.html --proof <case>/poster-proof.json
+.venv/bin/python scripts/render_longform.py --input <case>/poster.html --output <case>/final.png --render-proof <case>/render-proof.json
+.venv/bin/python scripts/verify-case-layout.py <case>/layout-manifest.json --poster-html <case>/poster.html --png <case>/final.png --render-proof <case>/render-proof.json
 ```
 
-Manifest 除真实浏览器坐标外，还必须记录 `background_samples`（明确未被前景覆盖的母版点）、每个阅读区连接处的 `seams[].sample_points` 与 `cta_groups`。校验器会实际打开最终 PNG 核对宽度与这些像素，不允许以 Plan 勾选或手填“背景正确”代替。
-8. 从最终 PNG 裁出 V1 主视觉诊断图；命中多行卡片、人像或 CTA 时再裁出相应诊断图。裁片只用于验收，不参与拼接，也不创建独立背景帧。
+`poster.html` 是可编辑的正式母版；`final.png` 是直接发布图。不得把 data URL 或 base64 内容写进 Plan、日志或对话。
 
-`frames/` 仅可存放从最终 PNG 裁出的诊断图，不能作为独立背景来源、拼接来源或另一套渲染输出。背景、局部视觉、文字和必要的原始资产层级关系必须在 Plan 或合成记录中可追溯。
+## 6. 验收与预算
 
-背景未被前景覆盖的区域必须保留母版原始像素；不得多次以不透明底板合成背景，避免暗部偏色、颗粒断裂或接缝两侧明度漂移。
-
-局部前景默认使用原生 alpha。只有无法取得可用 alpha、且该失败原因已写入 Plan 时，才允许采用键色降级；Plan 必须记录实际键色、前景同色风险、despill / 重抠结果和边缘复查。键色不是正式样张的默认生产路径。
-
-本黑金主题固定 `no-new-shadow`：不得为卡片、人物、主视觉或任何局部资产新增投影、外发光或悬浮阴影；来源资产已有的真实光影不得重复叠加。
-
-局部视觉资产不得生成必要中文正文、价格或二维码。任何工具返回仅记录文件路径、用途、提示词摘要和检查结论；不得将 data URL、base64 或二进制响应写入 Plan、日志或对话上下文。
-
-## 5. 交付前检查
-
-读取并执行 `daily-self-check.md`：先检查完整拼接图，再检查 360px 手机预览。发现问题时回到内容规划、版式或合成步骤修复；不得只通过缩小文字或增加无意义装饰掩盖问题。跨案例复盘和基线升级不属于本步骤。
-
-## 6. 版本管理
-
-- 每个新任务创建语义化新目录；不使用 `v1 / v2 / v3` 作为正式命名。
-- 已批准样张进入 `references/`；旧实验进入 `archive/`。
-- 不覆盖已有最终图、计划或资产。
-- 面向发布的规则、模板、示例、索引图与文件路径只保留 Longform 的中性命名；外部研究只沉淀为结构和约束，不能保留第三方 Skill、作者、产品或平台名称。
-- 长文案只保留一份冻结的规范来源；Plan 记录源模块 ID 到阅读区、`Lxx` 与资产的映射，不重复粘贴同一全文。若没有独立内容文件，Plan 可作为该规范来源。
-- 阻塞案例只补到所缺输入时，只重查受影响的输入、资产和放行项；已批准的叙事、`Lxx` 与主题不因单一补充资产而重读、重选或重做。
+- 默认完整导出 1 次；只有已命名的客观问题允许 1 次修复性导出。
+- 默认查看完整 PNG、首帧诊断裁片及最多两张命中风险区的裁片，并做浏览器 Mobile View Check；不生成独立 360px 输出。
+- 验收使用 `daily-self-check.md`。客观错误必须修复；主视觉材质、透视和气质不能自动判断时标记 `human-review-needed`。
+- 用户明确要求比较、替换或多方案时，可超过默认 ImageGen 预算；在 Plan 记录范围、目标和成本即可。

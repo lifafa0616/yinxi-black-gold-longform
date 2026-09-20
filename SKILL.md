@@ -1,53 +1,43 @@
 ---
 name: yinxi-black-gold-longform
-description: 从冻结中文文案、真实素材和行动信息制作 1080px 宽黑金手机长图；适用于课程、活动、研究、权益与专业内容海报，不用于多主题探索或纯网页交付。
+description: 从中文长文案、真实素材和行动信息制作可编辑的黑金手机长图 HTML，并由同一浏览器导出 1080px PNG；适用于课程、活动、研究、权益与专业内容海报。
 ---
 
 # Yinxi Black Gold Longform
 
-制作一张连续阅读的中文黑金手机长图：先识别文案的信息关系，再选择 R/L 配方、准备必要资产、以精确文字合成，并输出 1080px PNG 与 360px 预览。HTML/CSS/SVG 仅可作内部连续渲染源，不是交付物；正式 PNG 一律由 Skill 内置字体和固定浏览器渲染链路导出。
+制作一张 1080px 宽、连续阅读的黑金手机长图。正式母版是可编辑且自包含的 `poster.html`：图片和正式字体均嵌入文件；同一份 HTML 由固定浏览器渲染为可发布的 `final.png`。
 
 ## 适用边界
 
-- 仅使用 `minimal-editorial-tech + black-gold-editorial`；不改为蓝色、霓虹、金箔、蒸汽朋克或奢侈品广告风。
+- 仅使用 `minimal-editorial-tech + black-gold-editorial`，不改为蓝色、霓虹、金箔、蒸汽朋克或奢侈品广告风。
 - 新任务建立语义化案例目录，不覆盖已有输出、参考或历史案例。
-- 不删减、改写或遗漏用户冻结文案；标题、正文、数字、日期、价格、行动、二维码说明均以后置精确文字完成。
-- 日常交付仅包含 `plan.md`、1080px 宽最终 PNG 与 360px 宽预览。SVG / HTML 仅为内部连续母版源；`frames/` 仅存放从最终 PNG 裁出的诊断图，绝不参与拼接或独立铺背景。
+- 原始文案是事实来源，不能覆盖或丢失。长文案可提炼为海报展示文案，但人名、品牌、日期、地点、价格、数量、权益、CTA 与用户要求逐字保留的内容必须锁定。
+- 正式交付是 `plan.md`、自包含 `poster.html` 与由该 HTML 导出的 `final.png`。`frames/` 如出现，只能存放最终 PNG 的诊断裁片，绝不参与生产或拼接。
 
-## 日常读取路由（先少后多）
+## 日常读取路由
 
-日常生产不得为“保险起见”全文重读所有规则。先读以下最小链路，并把选择结果写入一页 `plan.md`：
+先读并填写以下最小链路：
 
 1. [daily-plan-template.md](references/daily-plan-template.md)
-2. [layout-recipes.md](references/layout-recipes.md) 的“配方选择索引”
-3. [black-gold-system.md](references/black-gold-system.md) 的“固定 Token / 首帧语义主视觉 / 人物呈现 / 编辑信息模块”
-4. `assets/baseline/baseline-notes.md` 与批准首帧正例（首帧主视觉必选）
-5. [text-rendering-rules.md](references/text-rendering-rules.md) 的字号底线
-6. [daily-self-check.md](references/daily-self-check.md)
+2. [content-planning.md](references/content-planning.md) 的“内容与营销两层分析”
+3. [layout-recipes.md](references/layout-recipes.md) 的“配方选择索引”
+4. [black-gold-system.md](references/black-gold-system.md) 的主题、首帧策略、人物与信息模块
+5. `assets/baseline/baseline-notes.md` 与批准首帧正例
+6. [text-rendering-rules.md](references/text-rendering-rules.md) 与 [daily-self-check.md](references/daily-self-check.md)
 
-完成内容关系分析与候选配方选择后，按命中条件再完整阅读：
-
-| 命中条件 | 必读材料 |
-|---|---|
-| 选中任意 `Lxx` | [layout-contracts.md](references/layout-contracts.md) 中该 `Lxx` 合同 |
-| 卡片、多列、复杂网格、章节号或人物并列 | [layout-rules.md](references/layout-rules.md) 相应章节 |
-| 高风险坐标布局 | `layout-rules.md` 内的 Layout Manifest 附录与验证脚本 |
-| 输入关系难以归类、需要调整整图叙事 | [content-planning.md](references/content-planning.md) 的“阅读区签名 / 配方候选” |
-| 规则维护、基线升格或案例复盘 | [production-workflow.md](references/production-workflow.md)；首帧生产前已读基线，无需重复读取 |
-
-不得跳过“配方选择索引”而凭关键词或好排程度直接挑选 `Lxx`；也不必为未命中的条件规则支付阅读成本。`production-workflow.md` 与 `content-planning.md` 是异常输入和维护使用的扩展依据，不是每张常规海报的必读全文。
+只在命中时再读：所选 `Lxx` 的 [layout-contracts.md](references/layout-contracts.md)、卡片/网格/人物/章节号的 [layout-rules.md](references/layout-rules.md)，以及异常输入或规则维护时的 [production-workflow.md](references/production-workflow.md)。
 
 ## 固定生产关口
 
-1. 先创建并填写 `plan.md`：输入可用性 → 信息关系与 R 配方 → 阅读区候选/选择 L 契约 → 资产可用性 → 黑金系统 → 放行。
-2. 任一阻塞项标为 `input-blocked` 或 `preflight-blocked`；未放行前不得生图、排字或试稿。
-3. 每个阅读区记录一行结构签名：读者问题、结论、真实关系、候选、最终 `Lxx`、未选原因与下一段衔接。
-4. 首帧必须有一个由 ImageGen 生成、解释冻结文案对象、关系或变化的语义主视觉；真实来源资产与程序化结构可进入后续阅读区，但不得取代首帧主视觉。中段不因留白生成装饰图；分条纯文字确有区分收益时，才使用与关键词一一对应的统一 icon 组。
-5. **先验收资产，再合成整图。** 首帧主视觉先以局部资产检查语义、材质、透视、文字安静区和边界；人物先在 `#10100F` 底上检查透明边缘与可见头顶。资产不通过，不得进入整图渲染。
-6. 在同一张连续 SVG / HTML 母版上一次合成背景、资产与精确文字；不得逐帧独立铺黑底再拼接。最终 PNG 必须由已加载正式字体的同一浏览器渲染引擎直接导出，不能把 SVG 交给其他栅格化工具二次转换。
-7. 使用下方固定命令导出并检查最终 PNG；从最终 PNG 裁出 V1 首帧和所有多行卡片 / 人像 / CTA 等命中风险区的诊断图，再导出 360px 预览并执行日常验收。
+1. 创建并填写 `plan.md`：输入可用性 → 内容分析 → 营销提炼 → R 配方与阅读区 → 资产与主题 → 放行。
+2. 输出“确认稿”，包含展示文案、事实锁定项、阅读区顺序、首帧策略与 ImageGen 预算。状态记为 `awaiting-copy-confirmation` 或 `awaiting-hero-confirmation`。
+3. 用户确认前，不得调用 ImageGen、处理人像、排版或完整渲染。任何阻塞项标为 `input-blocked` 或 `preflight-blocked`。
+4. 首帧必须有一个视觉中心：若传播重点是导师/嘉宾身份，使用确认的真实人像作为 `mentor-portrait` 主视觉；否则使用 1 项解释标题对象、关系或变化的 `imagegen` 主视觉。中段不因留白生图。
+5. 先局部验收主视觉或人像，再合成整图。主视觉检查语义、材质、透视、文字安静区与边界；人物检查对应展示模式、头脸完整和边缘。
+6. 在一张连续 HTML/CSS/SVG 母版上合成背景、资产与精确文字。阅读区高度由内容决定，不能按 9:16 分页、缩字或添加无意义装饰。
+7. 先把可编辑 `render.html` 打包为自包含 `poster.html`，再从该 HTML 导出和验证 PNG。HTML 与 PNG 不得来自两份版式源。
 
-## 固定渲染命令（不得换引擎）
+## 固定渲染命令
 
 首次使用，在 Skill 根目录执行：
 
@@ -57,32 +47,34 @@ python3 -m venv .venv
 .venv/bin/playwright install chromium
 ```
 
-案例的连续源必须包含唯一的 `#longform-canvas`，并使用 `assets/template/render.html` 中的 `.longform-serif` / `.longform-sans` 字体类。正式导出与验证固定为：
+案例的编辑源必须含唯一 `#longform-canvas`，并使用 `assets/template/render.html` 的 `.longform-serif` / `.longform-sans` 字体类。正式打包、导出与检查固定为：
 
 ```bash
-.venv/bin/python scripts/render_longform.py \
+.venv/bin/python scripts/package_poster_html.py \
   --input <case>/render.html \
+  --output <case>/poster.html \
+  --proof <case>/poster-proof.json
+
+.venv/bin/python scripts/render_longform.py \
+  --input <case>/poster.html \
   --output <case>/final.png \
   --render-proof <case>/render-proof.json
 
 .venv/bin/python scripts/verify-case-layout.py <case>/layout-manifest.json \
+  --poster-html <case>/poster.html \
   --png <case>/final.png \
   --render-proof <case>/render-proof.json
 ```
 
-脚本会使用 Playwright Chromium 加载 `assets/fonts/` 内随 Skill 分发的 Noto CJK 字体。字体、Chromium 或画布宽度不符合要求时必须失败；不得切换系统字体、`sips`、Pillow、ImageMagick 或另一浏览器“先出一张”。
+打包器会把本地图片、CSS 图片资源和两套正式字体嵌入 `poster.html`。渲染器只接受这种自包含 HTML，并固定使用 Playwright Chromium；字体、图片、画布宽度或 Chromium 不符合要求时必须失败，不得回退到系统字体、外部图片、`sips`、ImageMagick 或另一套排版引擎。超长图如需分段，只能从同一浏览器 DOM 取像素条带后逐像素拼合。
 
 ## 生产预算与停止条件
 
-- 首帧语义主视觉必选，且默认只生成 **1 项**局部 ImageGen 主视觉；不生成中段氛围图、额外版本或“先看看”的备选图。
-- 若该资产在局部验收中出现可见的变形透视、破损对象、烘焙文字、红黄灰边、独立矩形边界、材质粗糙或与标题关系不成立，可生成 **1 次受限替换**；这是失败修复，不是视觉探索。第二次仍不通过则标 `preflight-blocked / human-review-needed`，不能低质入图。
-- 真人不得调用 ImageGen。一次安全去背景尝试通过后用透明 PNG；失败时立即降级为原图合理裁切，并写明原因。不得为抠图反复生成或反复重试。
-- 默认完整渲染 **1 次**；仅对最终检查中已经命名的客观错误允许 **1 次**修复性完整渲染。主视觉问题必须在局部资产阶段解决，不能带入整图后再反复渲染。
-- 默认查看 360px 整图、V1 主视觉裁片，以及最多两张命中多行卡片 / 人像 / CTA 的诊断裁片；这些裁片均从最终 PNG 导出，不输出独立背景帧。`layout-manifest.json` 必须从正式浏览器渲染后导出，不能手工补写替代检查；并须提供真实 PNG 的背景采样点、阅读区连接采样点与跨容器 CTA 数据组。
-- HTML/CSS/SVG 如为渲染工具所需，只保留为案例内部源；不作为交付、报告或额外版本。交付仍只有 PNG、预览和 `plan.md`。
+- `mentor-portrait` 首帧默认不调用 ImageGen；`imagegen` 首帧默认 1 项，局部验收有客观失败才允许 1 次替换。用户明确要求多方案或替换时，在 Plan 记录其范围后执行。
+- 真人不得由 ImageGen 改脸或重生。根据 `transparent / masked / source-crop` 选择展示模式；复杂多人像不在 Skill 内做像素级精修。
+- 默认完整导出 1 次；仅对检查中已命名的客观错误允许 1 次修复性完整导出。主视觉问题停在资产阶段解决。
+- 正式验收查看完整最终 PNG、首帧与命中风险区的诊断裁片，并在浏览器以约三分之一视觉比例完成 Mobile View Check；不交付独立 360px 缩略图。
 
 ## 状态与维护边界
 
-日常出图完成后可写 `agent-checked / human-review-needed`。只有人类确认后才能写 `human-approved`。
-
-跨案例复盘、历史样张比对、规则沉淀、基线升级和新旧案例回归属于维护者流程，不属于同事每次调用 Skill 的日常生产路径。
+日常出图完成后可写 `agent-checked / human-review-needed`；只有人类确认后才能写 `human-approved`。跨案例复盘、规则升格与基线更新属于维护流程，不属于同事每次调用的日常生产路径。

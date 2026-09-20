@@ -2,31 +2,30 @@
 
 本文件只规定内容如何被排成可读、连续的长图；不规定主题颜色、材质或具体主视觉。
 
-## 1. 整图画布与帧
+## 1. 整图画布与阅读区
 
 - 长图设计母版与最终交付 PNG 的宽度固定为 `1080px`，适用于全部风格、主题和案例；不得自行改成 1440px 等其他宽度。
-- 本项目的字号、边距、内容区域、间距和坐标均以 `1080px` 宽设计母版为计量基准。内容增加时优先选择匹配的信息结构、扩展高度或帧数；可按本文件的 8px 边距梯度扩大正文宽度，但不得缩小字号下限。
-- 默认阅读帧：`N × 9:16`，每帧 `1080 × 1920px`；内容决定 `N`。
-- 总画布：`1080 × (1920 × N)px`。`frame` 是阅读节奏工作区，不是独立背景切片。
-- 如横向证据或比较是核心，项目开始时整体使用 `1080 × 1440px` 的 `3:4`；不混用两种主帧比例。
-- 最终检查对象是完整拼接图和 360px 宽手机预览，不是单帧。
+- 本项目的字号、边距、内容区域、间距和坐标均以 `1080px` 宽设计母版为计量基准。内容增加时优先选择匹配的信息结构、扩展阅读区或总高度；可按本文件的 8px 边距梯度扩大正文宽度，但不得缩小字号下限。
+- 阅读区是连续画布中的内容段；其高度由实际内容和正式字体决定，不使用固定 `9:16` 或 `3:4` 生产单位。
+- 总画布为 `1080 × dynamic-height`。诊断 `frame` 只允许从最终 PNG 裁出，不是背景切片或生产单元。
+- 最终检查对象是完整连续图、浏览器 Mobile View Check 与命中风险区的诊断裁片。
 - 模型返回的原始资产尺寸与手机预览尺寸不等于设计母版尺寸；原始资产按比例适配到母版，最终必须核验实际像素宽度与 1080px 基准下的版式数值，不能只在提示词中声明尺寸。不得非等比拉伸或用整图缩放代替版式验收。
 
 ## 2. 母版合成架构
 
 ```text
 整图母版背景
-+ 跨帧连续结构
-+ 帧内局部视觉资产
++ 跨阅读区连续结构
++ 阅读区内局部视觉资产
 + 后置真实文字与行动信息
 = 最终长图
 ```
 
 - 母版背景负责统一画布色、低对比纹理、侧轨或整图级刻度，不承载必要信息。
-- 跨帧结构只在整图坐标中建立一次；不得在每帧重复生成并制造接缝。
-- 局部视觉资产必须与当前内容直接相关；每帧最多一个主视觉焦点。
+- 跨阅读区结构只在整图坐标中建立一次；不得重复生成并制造接缝。
+- 局部视觉资产必须与当前内容直接相关；每个阅读区最多一个主视觉焦点。
 - 标题、正文、价格、资源说明、行动信息与二维码说明均后置为精确文字。二维码不得生成或伪造；用户提供并确认的真实二维码可作为 `approved-source` 使用，未提供时才使用标明“待提供”的空白占位框。
-- 资产若接近帧边界，必须渐隐、延续或在安全区前结束；不允许硬切。
+- 资产若接近阅读区衔接处，必须渐隐、延续或在安全区前结束；不允许硬切。
 
 ## 3. 网格、内容轴与节奏
 
@@ -75,7 +74,7 @@ track-safe text axis x=112–968（外侧轨道 + 32px 内缩时）
 - 横向数据组中，左侧数字与右侧两行说明并列时，数字可见底边与右侧最后一行文字底边对齐，允许 `±8px` 光学校正。
 - 价格、日期、名额、频次、成果数量及文案明确指定的关键数字必须形成独立视觉层级：数字本身是该数据组的第一视觉落点，优先使用更大字号、主题色、展示字形 / 高字重与独立留白强化；单位与解释紧邻数字，但不得把数字降格为普通正文灰度。
 - 20 字以上的连续说明使用宽正文栏，不拆成大量小卡片。
-- 文字过多时增加帧、阅读区或总高度，不能降低样张字号下限，也不能压缩、删减或改写源文案。
+- 文字过多时增加阅读区或总高度，不能降低样张字号下限，也不能压缩、删减或改写事实锁定项。
 
 ### 高密度信息卡
 
@@ -103,14 +102,14 @@ track-safe text axis x=112–968（外侧轨道 + 32px 内缩时）
 - 人像裁切先根据原图主体选择裁切锚点，再应用圆形或异形蒙版；不得一律居中裁切。
 - 裁切后必须完整保留头顶、脸部和下巴等识别区域；任何头像切掉头部、脸部或下巴，均视为失败。
 - 人像、姓名、标签和介绍必须归属同一固定信息块；文字不得侵入相邻人物的头像、姓名或介绍区域。
-- 人物介绍的对齐锚点为 `intro_text_top`：姓名或身份信息中的第一条关联文字，不得使用“导师”等泛章节标签。若 `portrait_mode=transparent`，以人物可见头顶对齐 `intro_text_top`；若 `portrait_mode=source-crop`，以图片矩形顶边对齐 `intro_text_top`，两者均为 `±8px`。人物可放大以平衡文字视觉重量，但不得为制造重叠而故意侵入文字区。
+- 人物介绍的对齐锚点为 `intro_text_top`：姓名或身份信息中的第一条关联文字，不得使用“导师”等泛章节标签。若 `portrait_mode=transparent`，以人物可见头顶对齐 `intro_text_top`；若 `portrait_mode=masked/source-crop`，以图片矩形顶边对齐 `intro_text_top`，均为 `±8px`。人物可放大以平衡文字视觉重量，但不得为制造重叠而故意侵入文字区。
 
 文字叠图仅在以下全部成立时允许：
 
 1. 裁切后存在连续、低细节的文字安静区；
 2. 安静区不含脸、手、产品关键功能或核心证据；
 3. 有足够对比，且不依赖整图大面积蒙版；
-4. 360px 宽预览中标题仍可直接阅读。
+4. 浏览器 Mobile View Check 中标题仍可直接阅读。
 
 失败时按顺序处理：移动文字、调整裁切、改图文分栏、仅为文字区域加局部遮罩、替换资产。不得用全图渐变蒙版掩盖失败。
 
@@ -120,7 +119,7 @@ track-safe text axis x=112–968（外侧轨道 + 32px 内缩时）
 
 - 长图是连续阅读，不模拟可点击分页。
 - 禁止 `NEXT`、翻页箭头、按钮式“下一章”或会被理解为交互控件的转场。
-- 若信息帧底部留白超过约 `12%` 视窗高度，优先扩展当前信息组、延长既有背景结构或重分配模块位置；不以伪交互提示填空。
+- 若阅读区底部出现无意义大块留白，优先扩展当前信息组、延长既有背景结构或重分配模块位置；不以伪交互提示填空。
 
 ## 附录：高风险布局 Layout Manifest（条件读取）
 
@@ -130,8 +129,7 @@ track-safe text axis x=112–968（外侧轨道 + 32px 内缩时）
 {
   "canvas": {"width": 1080, "color": "#10100F"},
   "reading_zones": [{"id": "V1", "contract": "L01"}],
-  "frames": [{"id": "V1", "rect": [0, 0, 1080, 1920]}],
-  "hero": {"copy_anchor_bottom": 620, "copy_group_height": 280, "visible_bbox": [112, 700, 856, 760]},
+  "hero": {"strategy": "imagegen", "copy_anchor_bottom": 620, "copy_group_height": 280, "visible_bbox": [112, 700, 856, 760]},
   "text_blocks": [{"id": "V1-title", "role": "title", "font_size": 116, "rendered_lines": ["拆解16份大厂JD后，", "我们发现AI作品集"]}],
   "background_samples": [{"point": [16, 16]}],
   "seams": [{"sample_points": [[16, 1900]]}],
@@ -142,13 +140,13 @@ track-safe text axis x=112–968（外侧轨道 + 32px 内缩时）
 
 | 条件对象 | 必须记录 |
 |---|---|
-| 所有案例 | `canvas`、阅读区 `Lxx` 序列、帧 rect、`background_samples` 与帧边界 `seams[].sample_points` 的真实 PNG 采样 |
+| 所有案例 | `canvas`、阅读区 `Lxx` 序列、`background_samples` 与阅读区边界 `seams[].sample_points` 的真实 PNG 采样 |
 | 首帧 | `copy_anchor_bottom`、`copy_group_height`、主视觉实际 `visible_bbox`；不得用图片画布 bbox 代替 |
-| 渲染真源 | 单独的 `render-proof.json`：`engine=playwright-chromium`、正式字体已加载、最终 PNG 由同一布局引擎直接导出 |
+| 渲染真源 | `poster.html`（资产与字体内嵌）、`render-proof.json`：`engine=playwright-chromium`、正式字体和图片已加载、浏览器栅格来自同一布局引擎；超长时只允许该浏览器的像素条带拼接 |
 | 换行文字 | 每个发生换行的 `title` / `module-title` / `body` 的 `rendered_lines`、实际 `font_size`；行数据从最终浏览器渲染树导出 |
 | 容器 | `id`、`rect`、`padding`、子元素 bbox / role / font_size / `rendered_lines` |
 | CTA 数据组 | `cta_groups[].id`；每个价格和 QR 子元素写同一个 `cta_group`，即使它们不在同一容器 |
 | 章节号 | bbox、`title_top`、受保护文字 bbox |
-| 人物 | `portrait_mode`、`intro_text_top`、关联文字区 top/bottom；`transparent` 记录 `visible_head_top` 与 `visible_bbox`，`source-crop` 记录 `image_rect_top` 与 `image_rect` |
+| 人物 | `portrait_mode`、`intro_text_top`、关联文字区 top/bottom；`transparent` 记录 `visible_head_top` 与 `visible_bbox`，`masked/source-crop` 记录 `image_rect_top` 与 `image_rect` |
 
-使用：`.venv/bin/python scripts/verify-case-layout.py <case>/layout-manifest.json --png <case>/final.png --render-proof <case>/render-proof.json`。验证失败必须回到布局；渲染器无法导出真实坐标、真实 PNG 或渲染证明时，该案例不能写 `agent-checked`。
+使用：`.venv/bin/python scripts/verify-case-layout.py <case>/layout-manifest.json --poster-html <case>/poster.html --png <case>/final.png --render-proof <case>/render-proof.json`。验证失败必须回到布局；渲染器无法导出真实坐标、真实 PNG 或渲染证明时，该案例不能写 `agent-checked`。

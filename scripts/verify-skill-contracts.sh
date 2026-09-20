@@ -40,6 +40,7 @@ for file in \
   assets/baseline/baseline-notes.md \
   assets/baseline/01-hero-approved.png \
   assets/baseline/poster-preview-approved.jpg \
+  scripts/package_poster_html.py \
   scripts/render_longform.py \
   scripts/verify-case-layout.py
 do
@@ -51,15 +52,15 @@ require_text SKILL.md "Playwright Chromium"
 require_text SKILL.md "配方选择索引"
 require_text references/black-gold-system.md "固定 Token"
 require_text references/black-gold-system.md "人物呈现"
-require_text references/daily-plan-template.md "内容关系与配方选择"
+require_text references/daily-plan-template.md "内容与营销确认稿"
 require_text references/content-planning.md "阅读区签名"
-require_text references/production-workflow.md "首帧固定为 1 项 ImageGen 语义主视觉"
-require_text references/daily-self-check.md "高风险布局"
+require_text references/production-workflow.md "mentor-portrait"
+require_text references/daily-self-check.md "Mobile View Check"
 require_text references/layout-rules.md "高风险布局 Layout Manifest"
 require_text references/layout-contracts.md "同类内容过量时的合法处理"
 
 personal_root='/'"Users/"
-if find "$ROOT" -type f ! -path "$ROOT/.git/*" -exec grep -n -F "$personal_root" {} \; | grep -q .; then
+if find "$ROOT" -type f ! -path "$ROOT/.git/*" ! -path '*/__pycache__/*' -exec grep -n -F "$personal_root" {} \; | grep -q .; then
   echo "independent Skill contains a personal local path" >&2
   exit 1
 fi
