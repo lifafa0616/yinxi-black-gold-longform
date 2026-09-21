@@ -1,181 +1,186 @@
-# Chapter Editorial Production Contract Design
+# Evaluator-Centered Black-Gold Production Contract
 
-## Purpose
+## Decision
 
-Make the existing black-gold design system executable, and make `chapter-editorial-v1`, distilled from the approved “AI 影视共创免费线下工作坊” case, the default composition profile. A case must no longer be able to claim an `Lxx` contract, use black-gold tokens, or publish `final.png` without proving those claims against the browser-rendered DOM and a recorded visual evaluation.
+`black-gold-editorial-v1` becomes the executable black-gold design system. `chapter-editorial-v1`, derived from the approved “AI 影视共创免费线下工作坊” case, becomes its default composition profile.
 
-The profile preserves the approved case’s composition language, not its content or fixed eight-section count: continuous charcoal master background, side rails, right-side chapter navigation, restrained deep panels, and changing editorial rhythm across reading zones. The global black-gold system separately owns serif/sans typography, the warm-white/body-gray/single-gold hierarchy, and semantic text signals.
+The system is not a reference-image copier and is not an eight-section template:
 
-## Terms
+- A **reference case** is a human-approved quality anchor. It is never a source of current-case copy or assets.
+- A **composition profile** is reusable layout grammar: continuous charcoal master, rails, right-side chapter navigation, deep panels and editorial rhythm. It does not prescribe content, exact zone count or fixed coordinates.
+- The **design system** is shared across profiles: colors, typography, semantic gold signals, spacing and component hierarchy.
 
-- **Reference case:** a human-approved output used to establish quality and to evaluate a candidate. It is neither copied nor treated as a source of current-case assets.
-- **Template:** a concrete HTML starting point with fixed content slots. The default workflow must not force every case into the reference case's eight sections or coordinates.
-- **Design system:** shared tokens and rules that remain true across profiles: color, typography, semantic signal, spacing and component hierarchy.
-- **Composition profile:** a reusable arrangement grammar that chooses how the design system appears on a longform. `chapter-editorial-v1` is the default profile: it requires the chapter-oriented chrome and editorial rhythm, while R/L routing determines the number, content and component type of the reading zones.
+Every normal case publishes through one mechanism, the **Evaluator**. The Evaluator is not a checklist document and not `evaluation.json`; it is the only orchestrator allowed to decide whether a browser-rendered candidate may become `final.png`. `evaluation.json` is merely its hash-bound result receipt.
 
-## Non-goals
-
-- Do not make every case reproduce the approved case’s wording, images, 8 × 1920 height, or exact coordinates.
-- Do not permit old project files to become current-case assets.
-- Do not attempt automatic semantic image judgement in Python. The visual evaluator remains an explicit browser/image-review step, but its report becomes a required, machine-checked release input.
-
-## Architecture
+## Outcome
 
 ```text
-source/input manifest + confirmed copy
-  -> preflight case state + route/layout spec
-  -> chapter-editorial-v1 component CSS + DOM
-  -> poster.html / candidate.png
-  -> freshly re-exported browser layout manifest + validation.json
-  -> review bundle + visual evaluation report
-  -> promote candidate.png to final.png
+confirmed source + allowed assets
+  -> candidate poster
+  -> Evaluator
+       input-check
+       route-check
+       design-system-check
+       render-check
+       visual-check
+  -> pass: promote candidate.png to final.png
+  -> fail: named repair items; no final.png
+  -> uncertain: human-review-needed
 ```
 
-### 0. Hash-bound case records and state machine
+Normal cases that pass every automated and visual check promote automatically. Human review is required only when the visual check is uncertain, a new/changed profile is used, or the user explicitly requests approval before release.
 
-The current prose-only Plan remains a human-readable production record, but it is not evidence for a gate. Each production case additionally uses small, machine-readable records:
+## Trust and scope boundary
 
-- `input-manifest.json`: immutable source-copy hash, fact-lock IDs, explicit current-case input/asset allowlist, source origin/permission reference and SHA-256 for every allowed asset;
-- `confirmation.json`: source-copy hash, display-copy/fact mapping, recorded copy-confirmed state and recorded hero-route decision;
-- `route-spec.json`: selected `Rxx`, ordered source/fact groups, their relationship type, expected zone role, and permitted `Lxx` sequence;
-- `layout-spec.json`: design system/profile plus the per-zone component, item-count, type-role and semantic-signal requirements described below;
-- `case-state.json`: hash-bound lifecycle record.
+This contract prevents ordinary Skill/Agent and workflow mistakes: omitted profiles, false L labels, unapproved assets, Token drift, skipped checks and accidental direct release. It does **not** claim to defend against a malicious person with unrestricted local filesystem and script-write access. The records below provide reproducibility and auditability, not a security boundary against the repository owner.
 
-Only `preflight_case.py` may transition a case from `awaiting-copy-confirmation` / `awaiting-hero-confirmation` to `approved-for-production`. It verifies that the confirmed copy, fact locks, hero decision, input allowlist, R route and L layout specification all refer to the same current source hash.
+## Case contract
 
-The only valid artifact lifecycle is:
+Each active case has a versioned `case-contract/` directory with canonical UTF-8 JSON serialization and SHA-256 hashes. The existing prose `plan.md` remains a human-readable explanation; it is not a gate input.
 
-```text
-approved-for-production
-  -> candidate-rendered
-  -> validation-passed
-  -> evaluation-passed
-  -> rendered (publishable final)
-```
-
-Pack/render scripts reject cases lacking a current `approved-for-production` state. They only write `candidate.png`. A promotion script is the sole writer of `final.png` and only after matching validation and evaluation records pass. A stale state, source hash, asset hash, manifest hash, candidate hash or report hash is a hard failure.
-
-### 1. Executable design system and profile
-
-Create a global `black-gold-editorial-v1` design system and make `chapter-editorial-v1` its default composition profile. The system owns the real tokens and semantic hierarchy; the profile owns composition chrome. Their reusable CSS and DOM conventions supply:
-
-- `--canvas`, `--panel`, `--title`, `--body`, `--gold`, `--rule`, `--chapter`, `--rail`;
-- named type roles: hero title, section title, module/card title, body, metadata, kicker, index, metric, action and quote/conclusion;
-- the semantic signal rule: the hero title contains exactly one declared key phrase in gold; each later zone declares either no semantic gold signal or one exact signal string with a purpose of `keyword`, `result`, `conclusion`, `quote`, `action` or `metric`; structural indices may use gold but do not count as a semantic signal; body paragraphs never receive blanket gold styling;
-- default type scale and fonts: bundled serif for hero/section/module/action/quote display roles; bundled sans for body/meta/kicker; hero title 110px minimum, section title 56px minimum, module/card title 40px minimum, body/action 36px minimum and metadata 26px minimum. A profile component may use a larger declared value, but a case override cannot silently reduce a role below its token minimum;
-- the two 48px outer rails, content safe axis, optional low-contrast internal grid, and chapter-number slot at the established right-side geometry;
-- canonical classes for frame/zone, content, chapter, rail, panel, index, card, action panel and type roles.
-
-`render.html` must declare `data-design-system="black-gold-editorial-v1"` and `data-layout-profile="chapter-editorial-v1"`, then import system CSS and profile CSS before a case-local override sheet. Case CSS may set content-driven height and assets, but may not redefine a system token or replace a required component’s geometry.
-
-### 2. Machine-readable layout specification
-
-Each approved production case includes `layout-spec.json`, whose schema contains:
-
-```json
-{
-  "version": 1,
-  "profile": "chapter-editorial-v1",
-  "zones": [
-    {
-      "id": "V2",
-      "contract": "L03",
-      "chapter": "02",
-      "components": ["chapter", "three-column-grid"],
-      "items": 3
-    }
-  ]
-}
-```
-
-The spec is created from the selected R/L route before rendering and is the single contract shared by rendering, DOM validation, visual review, and promotion. It records only structural facts: design system, profile, ordered zones, selected `Lxx`, chapter/navigation use, required component types, item counts, selected type roles, declared semantic signal text/purpose, and any real asset slots. It does not duplicate copy or invent coordinates for content that requires natural height.
-
-`route-spec.json` is the R-level companion to `layout-spec.json`. It prevents a plan from claiming R6 while rendering unrelated sections: every zone declares its source/fact group IDs, relationship type and one narrative responsibility from `establish`, `explain`, `evidence`, `compare`, `progress`, `benefit`, `conclude`, or `action`. The validator verifies the declared R skeleton and L sequence against this spec. It does not pretend that CSS can determine truthfulness; preflight and visual review are responsible for checking the source/fact mapping.
-
-### 3. Contract-to-component mapping
-
-The profile owns an explicit mapping for the contracts used by routine black-gold cases:
-
-| Contract | Required component and browser-verifiable condition |
+| Record | Purpose |
 |---|---|
-| L01 | one hero, one title group, profile chapter/navigation chrome |
-| L03 | exactly three peer cards in three horizontal columns |
-| L04 | exactly four peer cards in a 2 × 2 grid |
-| L05 | exactly two peer comparison tracks |
-| L06 / L16 | indexed vertical path with shared reading axis |
-| L08 | declared core and peripheral relationship elements; no plain list substitute |
-| L09 | declared image/text split matching the selected orientation |
-| L10 | one action panel; QR slot only when source QR exists |
-| L12 / L14 | their approved grid/list variants with declared item count |
-| L13 | person unit binds image, name, role and description |
+| `input-manifest.json` | Normalized source-copy hash; fact-lock IDs; allowed assets with realpath, SHA-256, media type, intended slot, origin and permission reference. |
+| `confirmation.json` | Source hash; display-copy/fact mapping; copy-confirmed result; hero decision and required human confirmation reference. |
+| `route-spec.json` | Selected `Rxx`; ordered source/fact groups; relationship type; narrative responsibility; allowed L sequence. |
+| `layout-spec.json` | Design system/profile; ordered zones; L contract variant; components; peer/item counts; type roles; semantic signals; optional asset slots. |
+| `case-state.json` | Contract version, current state, input/spec hashes, evaluator version and legal transition evidence. |
 
-The renderer uses these component classes and `data-layout-component` markers. Every visible reading-zone text, image, card, rail, chapter, portrait, protected box and CTA must be represented by a required marker rather than an optional annotation. The validator measures the resulting boxes, counts peers, verifies expected row/column relationships, and rejects a contract label unsupported by the actual DOM. Hidden markers cannot satisfy a requirement.
+`preflight_case.py` validates schema completeness and hash consistency, then alone moves a case to `approved-for-production`. It verifies integrity only; a recorded human confirmation is responsible for approving copy meaning, source/fact mapping and asset rights.
 
-### 4. Token and profile validation
+The lifecycle is:
 
-Extend the manifest exporter to collect computed foreground color, background color, font family, component markers, chapter boxes, rail boxes, and per-zone component boxes. Extend the validator to enforce:
+```text
+awaiting-copy-confirmation / awaiting-hero-confirmation
+  -> approved-for-production
+  -> candidate-rendered
+  -> evaluating
+  -> evaluation-passed | evaluation-failed | human-review-needed
+  -> promoted
+```
 
-- exact design-system/profile identity and approved token values on their owned elements;
-- bundled serif/sans font usage and minimum sizes for all named type roles;
-- the declared gold signal string/purpose and exactly one gold signal in each allowed scope;
-- required rails, chapter boxes, safe-axis geometry, and no chapter overlap when the profile declares navigation;
-- no unapproved case-local override of profile-owned token variables;
-- selected contract geometry and item count from `layout-spec.json`.
+No tool may write a publishable `final.png` before `promoted`. The renderer writes `candidate.png`; `promote_candidate.py` performs the only final-name write after rehashing all required inputs immediately before an atomic promotion. Legacy cases are read-only references. The legacy direct-to-`final.png` command path is deprecated and rejected for new contract-version cases.
 
-The exported manifest must include all four computed padding edges, direct-child anchors, computed CSS grid/flex placement, font family/weight/color, component/zone ownership, chapter boxes, rail boxes, protected boxes, portrait boxes, visible status and media boxes. Zone bboxes are validated as an ordered continuous 1080px-wide sequence; their derived adjacent boundaries define the complete seam list. A seam marker must exist for every adjacent pair, not merely for one arbitrary boundary.
+## Executable design system
 
-Validation never trusts a supplied JSON attestation. `verify_case.py` regenerates a temporary Manifest from the exact `poster.html` in Chromium and validates that fresh measurement. On success it writes a hash-bound `validation.json` covering the source HTML, candidate PNG, render proof, poster proof, manifest and both specs.
+`black-gold-editorial-v1` owns named CSS tokens and named text/component roles. Profile-owned styles are emitted as ordered inline `<style>` blocks in `render.html`; external `<link>`, CSS `@import`, remote URL and untracked stylesheet dependencies are rejected by the packager. A case-local override may set content-driven dimensions and declared assets but may not replace owned computed properties.
 
-The current `ai-design-efficiency` layout is a required failing fixture: its one-column L03, list-shaped L08, three-item L04, and absent chapter chrome must all produce named failures.
+### Fixed visual tokens
 
-### 5. Release evaluator and promotion gate
+| Role | Value |
+|---|---|
+| canvas | `#10100F` |
+| panel | `#181816` |
+| display ink | `#F0ECE2` |
+| body/meta | `#94918A` |
+| signal gold | `#CCAA77` |
+| rule / chapter / rail | versioned profile values derived from the approved case |
 
-Rendering produces `candidate.png`, never a publishable `final.png`. The evaluator reviews the candidate, the approved profile baseline, and the contract-validation result, then records `evaluation.json` with:
+### Text and signal roles
 
-- profile and candidate hashes;
-- pass/fail results for profile rhythm, contract realization, token fidelity, hero integration, and mobile readability;
-- concise visual evidence for each result;
-- overall `passed` only when every mandatory category passes.
+Each visible reading-text leaf must declare a stable ID and one role: `hero-title`, `section-title`, `module-title`, `body`, `meta`, `kicker`, `index`, `metric`, `action`, or `quote`.
 
-`promote_candidate.py` verifies the report schema, hashes, validator success, and overall pass before creating `final.png`. Missing, stale, incomplete, or failed evaluation blocks promotion. The Plan status mirrors this lifecycle: `approved-for-production` → `candidate-rendered` → `evaluation-passed` → `rendered`; a candidate never masquerades as final output.
+- Display roles use the bundled serif face; body/meta/kicker use the bundled sans face.
+- Minimum sizes are: hero title 110px, section title 56px, module title 40px, body/action 36px, metadata 26px. A contract may declare a larger value, never a smaller one.
+- The hero declares exactly one `data-signal-id` with purpose `keyword` and computed signal-gold color.
+- Every later zone declares an explicit signal policy: no semantic signal, or one/more named `signal-id` nodes permitted by its L-contract variant. Each signal declares `keyword`, `result`, `conclusion`, `quote`, `action`, or `metric` purpose. Structural indices are separately marked and cannot satisfy a semantic signal requirement.
+- Plain body text cannot receive signal gold. The Evaluator validates computed paint color, role, signal ID, scope and visible contribution; it never relies on fragile raw-string matching.
 
-The evaluator receives a deterministic `review-bundle/`: the full candidate, first-frame crop, all named risk-zone crops, browser mobile-view screenshot, profile baseline identifier, computed layout/token summary and validation result. `evaluation.json` records the bundle hashes, evaluator/reviewer identity and time, and an explicit pass/fail for every mandatory category. If visual quality, semantic relevance or material treatment cannot be determined automatically, the result is `human-review-needed`, not pass. A human approval record tied to the same hashes is then required for promotion.
+### Default composition profile
 
-### 6. Skill workflow
+`chapter-editorial-v1` requires the approved case’s reusable composition grammar:
 
-After user copy and hero decisions are confirmed, the Skill must:
+- continuous 1080px charcoal master rather than independent black pages;
+- two outer rails at the profile coordinates, a content safe axis and at most three low-contrast internal structural lines;
+- right-side chapter navigation where the zone/spec declares a chapter; chapter geometry, size and collision clearance are measurable;
+- restrained deep panels, rules, index and action-panel components;
+- changing editorial rhythm between zones rather than a repeated list/card wall.
 
-1. choose `chapter-editorial-v1` unless a future named profile is explicitly selected;
-2. write the source/input, confirmation, R-route, L-layout and profile/component records; use `preflight_case.py` to obtain `approved-for-production`;
-3. load only the profile’s relevant component contracts;
-4. compose from profile CSS/components, package, render `candidate.png`, export manifest, and run contract validation;
-5. inspect the candidate against the profile baseline and write `evaluation.json`;
-6. promote only after the evaluator passes; otherwise repair the named failed component and repeat the limited candidate cycle.
+The profile does not require eight zones, a particular hero asset, exact copy, exact zone heights or an exact reference-case image layout.
 
-## Error handling
+## Route and layout contracts
 
-- Missing profile marker, malformed spec, unknown component, absent required component, or failed geometry is a pre-promotion failure.
-- A case with no source QR cannot declare a populated L10 QR slot.
-- Missing, ambiguous or unapproved source copy / fact lock / hero route / input asset is a preflight failure, not a reason to render a draft final.
-- The packer only embeds local assets named in `input-manifest.json`; parent-directory, historical-case and unlisted local paths fail packaging.
-- A missing marker, invisible marker, incomplete seam set, unmeasured component, or manually supplied Manifest fails validation.
-- A visual judgement that cannot be made automatically is recorded as failed/pending, not silently passed; it requires explicit human approval.
-- Existing historic cases remain references. They are not automatically converted into active production cases or usable assets.
+`route-spec.json` is the R-level contract. Each zone maps named fact/source groups to one narrative responsibility: `establish`, `explain`, `evidence`, `compare`, `progress`, `benefit`, `conclude`, or `action`. It declares the selected R skeleton and the permitted ordered L sequence. Automation verifies structural consistency; a human confirmation owns factual/semantic truth.
 
-## Test strategy
+`layout-spec.json` is the L-level contract. It uses versioned, per-contract schemas rather than a generic `items` field. Every schema defines component IDs, ownership, required visible text/media roles, optional slots, peer sets, permitted variants and numerical geometry tolerances.
 
-1. Unit tests cover parsing/validation of input, confirmation, route, layout and state records; token/type roles; component counts; grid geometry; chapter/rail geometry; all-zone seam coverage; and promotion requirements.
-2. A minimal invalid fixture reproduces the current failure and must fail with R-route, L03, L08, L04, profile-chrome, token and missing-seam errors.
-3. A minimal compliant chapter-editorial fixture must pass the structural/profile validator. The human-approved film-workshop case is preserved as a visual reference fixture, not as a current-case asset fixture.
-4. Provenance tests prove that an unlisted local asset, wrong source hash, missing confirmation, stale Manifest, hand-written Manifest, or unapproved state cannot reach packaging/rendering.
-5. Promotion tests prove that a missing, stale, failed, pending-human, or hash-mismatched validation/evaluation cannot create `final.png`; a valid passing evaluation and human approval can.
-6. Existing portable-HTML tests and the distributable-skill contract check continue to pass.
+Required v1 contract predicates include:
+
+| Contract | Mechanical predicate |
+|---|---|
+| L01 | one visible hero and title group; declared profile chrome. |
+| L03 | exactly three visible peer cards in one horizontal three-column track. |
+| L04 | exactly four visible peer cards in a two-column, two-row grid. |
+| L05 | exactly two visible comparison tracks with a declared shared comparison dimension. |
+| L06 | indexed vertical process nodes with declared order and axis geometry. |
+| L08 | named visible core plus peripheral relationship nodes and declared connectors; a plain list cannot satisfy it. |
+| L09 | declared `horizontal` or `vertical` image/text split, correct slot orientation and required media/text pairing. |
+| L10 | one action panel; populated QR only when an approved QR slot/asset exists. |
+| L12 / L14 | declared approved grid/list variant with exact item count and peer topology. |
+| L13 | each visible person unit binds approved image, name, role and description. |
+| L16 | indexed progressive stages with declared order and shared reading axis; it is not interchangeable with L06. |
+
+Every component is marked with `data-layout-component`, zone ownership and stable component ID. Marker-only proxy DOM is prohibited: required marked components must contribute visible paint inside the canvas, have nonzero opacity, be within the measured canvas intersection, not be fully clipped, and not be fully occluded by an unrelated layer. Visible reading text in HTML, SVG or canvas must belong to a declared role/component; unsupported pseudo-element or canvas text is rejected until explicitly modeled.
+
+## Evaluator mechanism
+
+`evaluate_case.py <case>` is the one release decision entry point. It regenerates every derived artifact from the current case and writes `case-contract/evaluation.json` only after all checks complete. It contains five checkers.
+
+### 1. Input check
+
+Verifies current source hash, record schemas, confirmation/hero decision, fact-lock/display mapping completeness, allowed asset hashes and declared asset slots. The packager validates all HTML/CSS/SVG/media references against the manifest before inlining: realpaths are normalized, symlink escapes and parent-directory traversal fail, and unsupported asset mechanisms are banned until a parser is added. The portable proof retains asset-manifest ID/hash-to-embedded-byte mapping.
+
+### 2. Route check
+
+Verifies that route and layout specs share source/spec versions; zones occur in declared order; R responsibilities match the chosen skeleton; and only the L contracts/variants permitted by the route appear. It reports a structural mismatch, not a claim that it has proved business truth.
+
+### 3. Design-system check
+
+Runs against Chromium computed styles and measured boxes. It validates profile identity, owned token values, type role/font/weight/size/color, semantic signal rules, rails, chapter geometry, safe axis, panel padding, title-to-body rhythm, allowed internal lines and component ownership. It validates computed properties and boxes, not just CSS variable names or data attributes.
+
+### 4. Render check
+
+Freshly invokes the Manifest exporter from the exact `poster.html`; supplied Manifests are never trusted. It checks visible paint, DOM-to-canvas ownership, L geometry, overflow, orphan lines, continuity, asset load, portable HTML and renderer proof.
+
+Zones must be an ordered, non-overlapping, 1080px-wide continuous sequence within explicit tolerance. The Evaluator derives every adjacent boundary, then requires a named seam marker with `from-zone` / `to-zone` identifiers located in that boundary corridor. It captures the specified seam pixels rather than accepting arbitrary dark points.
+
+### 5. Visual check
+
+Builds a deterministic `review-bundle/`: complete candidate, first-frame crop, named risk-zone crops, fixed mobile-view screenshot, profile baseline ID/hash, computed design summary and validation result. The visual evaluator judges hero integration, material quality, editorial rhythm, profile coherence and mobile readability against an explicit rubric. It returns `pass`, `fail`, or `human-review-needed`.
+
+Mobile review uses a fixed Chromium version, 1080px source canvas, documented DPR, documented scale-to-mobile screenshot method and a versioned readability rubric. It is an inspection of the fixed-width longform, not a claim of responsive-page support.
+
+## Evaluator result and release
+
+`evaluation.json` records evaluator version, input/spec/profile hashes, candidate hash, fresh manifest hash, validation result, review-bundle hashes, all checker results and named failure evidence.
+
+- Any input, route, design-system or render failure yields `evaluation-failed`.
+- A passing visual check yields `evaluation-passed`; promotion is automatic for an existing approved profile unless the user requested review.
+- `human-review-needed` blocks promotion until a human records approval or rejection against the exact bundle/candidate/spec hashes.
+- `promote_candidate.py` rehashes candidate, specs, validation and evaluation immediately before atomically writing `final.png` and `release.json`.
+
+## Migration
+
+- Existing cases remain unmodified, read-only reference material and cannot satisfy v1 promotion without explicit migration.
+- New cases use the v1 contract directory and only candidate-first commands.
+- Existing direct render commands remain available only for reference reproduction and produce clearly non-publishable artifacts.
+- Documentation, examples and Skill commands migrate in the same release; no canonical example may instruct direct `final.png` output.
+
+## Tests and adversarial fixtures
+
+Implementation is staged, with a red test before every behavior change:
+
+1. Define canonical JSON/schema parsing, lifecycle transitions, candidate-first rendering and atomic promotion. Test missing/stale/illegal records and final-name bypasses.
+2. Harden portable CSS and asset allowlisting. Test external stylesheets, `@import`, remote/file URLs, symlink escapes, unlisted paths and source deletion after packaging.
+3. Build profile components and contract validators. Test the current one-column-L03/list-L08/three-item-L04 failure, hidden/off-canvas/opaque/occluded marker bypasses, wrong variants, wrong zone order and bad seams.
+4. Add computed Token/type/signal/chapter/rail/rhythm checks. Test fallback fonts, wrong weights/colors, missing or duplicate semantic signals, structural-index spoofing and case-CSS cascade overrides.
+5. Add review-bundle, visual-result and optional human-review flow. Test stale bundle hashes, failed/uncertain review states, fixed mobile evidence and automatic promotion only on a valid pass.
+6. Update legacy docs/commands and retain the approved film-workshop case only as a profile/visual reference fixture. Run the existing portable-HTML tests and distributable-skill checks throughout.
 
 ## Acceptance criteria
 
-- A case cannot label a vertical list as `L03`, `L04`, or `L08` and pass.
-- A case selecting the default profile cannot omit its declared chapter/rail/token structure and pass.
-- A case cannot claim an R route, source/fact mapping, user confirmation, hero strategy or current-case asset without a matching hash-bound record and pass preflight.
-- The packer cannot consume an asset outside the input allowlist.
-- `final.png` cannot exist through the new command path without a fresh successful validation, valid passing evaluation, explicit human approval and records tied to the exact candidate and manifest.
-- The profile remains content-flexible and does not reuse reference-case content or assets.
+- An active v1 case cannot render a list as L03/L04/L08, omit required profile chrome, or use an unpermitted L variant and still pass the Evaluator.
+- An active v1 case cannot silently use wrong fonts, sizes, Token colors, gold signal semantics, rails, chapters, panel rhythm or unmarked visible reading content and still pass.
+- An active v1 case cannot use an unconfirmed source/hero route, unlisted asset, stale record, hand-authored Manifest, missing seam, hidden proxy component or unportable stylesheet and still pass.
+- Normal approved-profile cases that fully pass the Evaluator automatically receive `final.png`; uncertain/new-profile/user-review cases remain blocked pending human review.
+- The default profile remains content-flexible and never treats reference-case copy, images or coordinates as current-case inputs.
