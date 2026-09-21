@@ -22,14 +22,38 @@ The profile preserves the approved case’s composition language, not its conten
 ## Architecture
 
 ```text
-Plan + confirmed copy
-  -> layout-spec.json (profile and per-zone contract)
+source/input manifest + confirmed copy
+  -> preflight case state + route/layout spec
   -> chapter-editorial-v1 component CSS + DOM
   -> poster.html / candidate.png
-  -> browser layout manifest
-  -> contract validator + visual evaluation report
+  -> freshly re-exported browser layout manifest + validation.json
+  -> review bundle + visual evaluation report
   -> promote candidate.png to final.png
 ```
+
+### 0. Hash-bound case records and state machine
+
+The current prose-only Plan remains a human-readable production record, but it is not evidence for a gate. Each production case additionally uses small, machine-readable records:
+
+- `input-manifest.json`: immutable source-copy hash, fact-lock IDs, explicit current-case input/asset allowlist, source origin/permission reference and SHA-256 for every allowed asset;
+- `confirmation.json`: source-copy hash, display-copy/fact mapping, recorded copy-confirmed state and recorded hero-route decision;
+- `route-spec.json`: selected `Rxx`, ordered source/fact groups, their relationship type, expected zone role, and permitted `Lxx` sequence;
+- `layout-spec.json`: design system/profile plus the per-zone component, item-count, type-role and semantic-signal requirements described below;
+- `case-state.json`: hash-bound lifecycle record.
+
+Only `preflight_case.py` may transition a case from `awaiting-copy-confirmation` / `awaiting-hero-confirmation` to `approved-for-production`. It verifies that the confirmed copy, fact locks, hero decision, input allowlist, R route and L layout specification all refer to the same current source hash.
+
+The only valid artifact lifecycle is:
+
+```text
+approved-for-production
+  -> candidate-rendered
+  -> validation-passed
+  -> evaluation-passed
+  -> rendered (publishable final)
+```
+
+Pack/render scripts reject cases lacking a current `approved-for-production` state. They only write `candidate.png`. A promotion script is the sole writer of `final.png` and only after matching validation and evaluation records pass. A stale state, source hash, asset hash, manifest hash, candidate hash or report hash is a hard failure.
 
 ### 1. Executable design system and profile
 
@@ -66,6 +90,8 @@ Each approved production case includes `layout-spec.json`, whose schema contains
 
 The spec is created from the selected R/L route before rendering and is the single contract shared by rendering, DOM validation, visual review, and promotion. It records only structural facts: design system, profile, ordered zones, selected `Lxx`, chapter/navigation use, required component types, item counts, selected type roles, declared semantic signal text/purpose, and any real asset slots. It does not duplicate copy or invent coordinates for content that requires natural height.
 
+`route-spec.json` is the R-level companion to `layout-spec.json`. It prevents a plan from claiming R6 while rendering unrelated sections: every zone declares its source/fact group IDs, relationship type and one narrative responsibility from `establish`, `explain`, `evidence`, `compare`, `progress`, `benefit`, `conclude`, or `action`. The validator verifies the declared R skeleton and L sequence against this spec. It does not pretend that CSS can determine truthfulness; preflight and visual review are responsible for checking the source/fact mapping.
+
 ### 3. Contract-to-component mapping
 
 The profile owns an explicit mapping for the contracts used by routine black-gold cases:
@@ -83,7 +109,7 @@ The profile owns an explicit mapping for the contracts used by routine black-gol
 | L12 / L14 | their approved grid/list variants with declared item count |
 | L13 | person unit binds image, name, role and description |
 
-The renderer uses these component classes and `data-layout-component` markers. The validator measures the resulting boxes, counts peers, verifies expected row/column relationships, and rejects a contract label unsupported by the actual DOM.
+The renderer uses these component classes and `data-layout-component` markers. Every visible reading-zone text, image, card, rail, chapter, portrait, protected box and CTA must be represented by a required marker rather than an optional annotation. The validator measures the resulting boxes, counts peers, verifies expected row/column relationships, and rejects a contract label unsupported by the actual DOM. Hidden markers cannot satisfy a requirement.
 
 ### 4. Token and profile validation
 
@@ -95,6 +121,10 @@ Extend the manifest exporter to collect computed foreground color, background co
 - required rails, chapter boxes, safe-axis geometry, and no chapter overlap when the profile declares navigation;
 - no unapproved case-local override of profile-owned token variables;
 - selected contract geometry and item count from `layout-spec.json`.
+
+The exported manifest must include all four computed padding edges, direct-child anchors, computed CSS grid/flex placement, font family/weight/color, component/zone ownership, chapter boxes, rail boxes, protected boxes, portrait boxes, visible status and media boxes. Zone bboxes are validated as an ordered continuous 1080px-wide sequence; their derived adjacent boundaries define the complete seam list. A seam marker must exist for every adjacent pair, not merely for one arbitrary boundary.
+
+Validation never trusts a supplied JSON attestation. `verify_case.py` regenerates a temporary Manifest from the exact `poster.html` in Chromium and validates that fresh measurement. On success it writes a hash-bound `validation.json` covering the source HTML, candidate PNG, render proof, poster proof, manifest and both specs.
 
 The current `ai-design-efficiency` layout is a required failing fixture: its one-column L03, list-shaped L08, three-item L04, and absent chapter chrome must all produce named failures.
 
@@ -109,12 +139,14 @@ Rendering produces `candidate.png`, never a publishable `final.png`. The evaluat
 
 `promote_candidate.py` verifies the report schema, hashes, validator success, and overall pass before creating `final.png`. Missing, stale, incomplete, or failed evaluation blocks promotion. The Plan status mirrors this lifecycle: `approved-for-production` → `candidate-rendered` → `evaluation-passed` → `rendered`; a candidate never masquerades as final output.
 
+The evaluator receives a deterministic `review-bundle/`: the full candidate, first-frame crop, all named risk-zone crops, browser mobile-view screenshot, profile baseline identifier, computed layout/token summary and validation result. `evaluation.json` records the bundle hashes, evaluator/reviewer identity and time, and an explicit pass/fail for every mandatory category. If visual quality, semantic relevance or material treatment cannot be determined automatically, the result is `human-review-needed`, not pass. A human approval record tied to the same hashes is then required for promotion.
+
 ### 6. Skill workflow
 
 After user copy and hero decisions are confirmed, the Skill must:
 
 1. choose `chapter-editorial-v1` unless a future named profile is explicitly selected;
-2. write the profile and zone/component route to `plan.md` and `layout-spec.json`;
+2. write the source/input, confirmation, R-route, L-layout and profile/component records; use `preflight_case.py` to obtain `approved-for-production`;
 3. load only the profile’s relevant component contracts;
 4. compose from profile CSS/components, package, render `candidate.png`, export manifest, and run contract validation;
 5. inspect the candidate against the profile baseline and write `evaluation.json`;
@@ -124,20 +156,26 @@ After user copy and hero decisions are confirmed, the Skill must:
 
 - Missing profile marker, malformed spec, unknown component, absent required component, or failed geometry is a pre-promotion failure.
 - A case with no source QR cannot declare a populated L10 QR slot.
+- Missing, ambiguous or unapproved source copy / fact lock / hero route / input asset is a preflight failure, not a reason to render a draft final.
+- The packer only embeds local assets named in `input-manifest.json`; parent-directory, historical-case and unlisted local paths fail packaging.
+- A missing marker, invisible marker, incomplete seam set, unmeasured component, or manually supplied Manifest fails validation.
 - A visual judgement that cannot be made automatically is recorded as failed/pending, not silently passed; it requires explicit human approval.
 - Existing historic cases remain references. They are not automatically converted into active production cases or usable assets.
 
 ## Test strategy
 
-1. Unit tests cover parsing and validating layout specs, tokens, component counts, grid geometry, chapter geometry, and promotion requirements.
-2. A minimal invalid fixture reproduces the current failure and must fail with L03, L08, L04, and profile-chrome errors.
-3. A minimal compliant chapter-editorial fixture must pass structural validation.
-4. Promotion tests prove that a missing, stale, failed, or hash-mismatched evaluation cannot create `final.png`; a valid passing evaluation can.
-5. Existing portable-HTML tests and the distributable-skill contract check continue to pass.
+1. Unit tests cover parsing/validation of input, confirmation, route, layout and state records; token/type roles; component counts; grid geometry; chapter/rail geometry; all-zone seam coverage; and promotion requirements.
+2. A minimal invalid fixture reproduces the current failure and must fail with R-route, L03, L08, L04, profile-chrome, token and missing-seam errors.
+3. A minimal compliant chapter-editorial fixture must pass the structural/profile validator. The human-approved film-workshop case is preserved as a visual reference fixture, not as a current-case asset fixture.
+4. Provenance tests prove that an unlisted local asset, wrong source hash, missing confirmation, stale Manifest, hand-written Manifest, or unapproved state cannot reach packaging/rendering.
+5. Promotion tests prove that a missing, stale, failed, pending-human, or hash-mismatched validation/evaluation cannot create `final.png`; a valid passing evaluation and human approval can.
+6. Existing portable-HTML tests and the distributable-skill contract check continue to pass.
 
 ## Acceptance criteria
 
 - A case cannot label a vertical list as `L03`, `L04`, or `L08` and pass.
 - A case selecting the default profile cannot omit its declared chapter/rail/token structure and pass.
-- `final.png` cannot exist through the new command path without a valid passing evaluation report tied to the exact candidate and manifest.
+- A case cannot claim an R route, source/fact mapping, user confirmation, hero strategy or current-case asset without a matching hash-bound record and pass preflight.
+- The packer cannot consume an asset outside the input allowlist.
+- `final.png` cannot exist through the new command path without a fresh successful validation, valid passing evaluation, explicit human approval and records tied to the exact candidate and manifest.
 - The profile remains content-flexible and does not reuse reference-case content or assets.
