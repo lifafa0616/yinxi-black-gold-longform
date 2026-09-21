@@ -56,7 +56,9 @@ Each active case has a versioned `case-contract/` directory with canonical UTF-8
 The lifecycle is:
 
 ```text
-awaiting-copy-confirmation / awaiting-hero-confirmation
+awaiting-copy-confirmation
+  -> awaiting-hero-confirmation
+  -> preflight-ready
   -> approved-for-production
   -> candidate-rendered
   -> evaluation-preparing (exclusive transient lock)
@@ -72,15 +74,18 @@ The following transition table is normative; an operation that does not match it
 
 | From | Operation / writer | Required current evidence | To |
 |---|---|---|---|
-| awaiting confirmation | `preflight_case.py` / deterministic tool | confirmed copy/hero decision and valid input, route and layout records | approved-for-production |
+| awaiting-copy-confirmation | `record_copy_confirmation.py` / human | source hash, display-copy/fact mapping and explicit copy confirmation | awaiting-hero-confirmation |
+| awaiting-hero-confirmation | `record_hero_confirmation.py` / human | current copy-confirmation hash and hero decision / approved hero-asset reference | preflight-ready |
+| preflight-ready | `preflight_case.py` / deterministic tool | confirmed copy/hero decision and valid input, route and layout records | approved-for-production |
 | approved-for-production | `render_candidate.py` / renderer | approved state plus current contract hashes | candidate-rendered |
 | candidate-rendered | `prepare_evaluation.py` / deterministic tool | fresh candidate, render proof and all deterministic checks | first acquires `evaluation-preparing`; atomically finishes at awaiting-visual-review, review-inheritance-recorded, or evaluation-failed |
 | awaiting-visual-review | `record_visual_review.py` / same running Agent | current evaluation session, every required artifact-open record, Agent run ID/timestamps and rubric findings | visual-review-recorded |
 | visual-review-recorded or review-inheritance-recorded | `finalize_evaluation.py` / deterministic tool | current direct receipt or inheritance proof | evaluation-passed, evaluation-failed, or human-review-needed |
 | human-review-needed | `record_human_review.py` / human | approval/rejection and exact candidate/bundle/spec/session hashes | evaluation-passed or evaluation-failed |
 | evaluation-passed | `promote_candidate.py` / deterministic tool | current evaluation plus all named proofs rehashed | promoted |
+| evaluation-failed, human-review-needed, evaluation-passed, or promoted after a new requested change | `reopen_case.py` / deterministic tool | named repair/change set; old session/review/evaluation marked historic; fresh input/spec/profile hashes | approved-for-production for layout/style-only repair; awaiting-copy-confirmation for any source/fact/asset change; awaiting-hero-confirmation for a hero decision/hero-asset change |
 
-Any material change returns the case to `candidate-rendered`; it cannot jump from a prior state to promotion. A human approval does not waive a hash mismatch: a changed candidate first follows the current render/evaluation path.
+`reopen_case.py` must invoke preflight validation before it writes `approved-for-production`; it cannot continue or mutate an old evaluation session. A repair then uses the ordinary `render_candidate → prepare → review/finalize` path. A human approval does not waive a hash mismatch: a changed candidate first follows this current path and cannot jump from a prior state to promotion.
 
 ## Executable design system
 
@@ -209,7 +214,7 @@ A new candidate normally invalidates a direct-review session. The only exception
 1. Its base candidate has a finalized `evaluation-passed` result with a direct same-Agent visual receipt.
 2. The only changed nodes are declared editable text leaves. Their text role, source/fact binding ID, signal ID/purpose, font/token/computed style, component/template hash, assets, DOM topology, zone height, seams and profile remain unchanged. A factual correction still needs the normal updated copy confirmation; it does not require a second visual review if these visual predicates remain true.
 3. Fresh Chromium measurement shows every changed leaf has the same rendered line count and a bbox delta no greater than `1px`; all deterministic input, route, design-system and render checks pass again.
-4. A candidate-image pixel diff is wholly contained in the union of those changed leaf bboxes expanded by `8px`; no other source pixels change.
+4. A candidate-image pixel diff is wholly contained in the union of **both** the base-candidate and new-candidate bbox for every changed leaf, with each bbox expanded by `8px`; no other source pixels change. This permits a safe deletion or shortening of text without treating the disappeared pixels as an out-of-scope visual change.
 
 The inheritance record binds base evaluation/receipt hashes, new candidate/session hashes, changed-leaf IDs, fresh check results, measured bboxes and diff evidence. `finalize_evaluation` may promote this inherited pass exactly as it would a direct pass. Any failed predicate—including a line reflow, title/hero/asset/token/structure change, altered semantic-gold meaning, or pixel change outside the declared text area—creates `awaiting-visual-review` and requires the normal same-Agent review. This preserves review effort for visual changes while retaining a reproducible audit chain.
 
@@ -235,7 +240,7 @@ Zones must be an ordered, non-overlapping, 1080px-wide continuous sequence withi
 
 `prepare_evaluation` builds a deterministic `review-bundle/`: full candidate, first-frame crop, named risk-zone crops, fixed mobile-view screenshot, profile baseline ID/hash, computed design summary and deterministic validation result. The same Agent running this Skill must then open the full candidate and every supplied crop with its native image/browser viewing capability before it returns a verdict. It may not infer a visual pass from HTML, CSS, the Manifest, or prior approval alone.
 
-The Agent records one of `pass`, `fail`, or `human-review-needed` in `visual-review.json`: evaluation-session/candidate/review-bundle/profile hashes; every viewed artifact, its native-open timestamp and Agent run ID; each rubric finding; verdict; and concrete repair instructions on failure. `finalize_evaluation` rejects a missing, stale or malformed receipt, but records a valid non-pass verdict as its blocking state; it does not contain an imaginary vision classifier.
+The Agent records one of `pass`, `fail`, or `human-review-needed` in `visual-review.json`: evaluation-session/candidate/review-bundle/profile hashes; every viewed artifact, its native-open timestamp and Agent run ID; and **exactly seven** named rubric records. Each record has its check ID, one `pass` / `fail` / `uncertain` status, a non-empty finding, and evidence artifact IDs; failure records also contain concrete repair instructions. `finalize_evaluation` rejects a missing, stale or malformed receipt, but records a valid non-pass verdict as its blocking state; it does not contain an imaginary vision classifier.
 
 The profile rubric has seven named checks. Each gets `pass`, `fail`, or `uncertain`, evidence artifact IDs and a short finding:
 
@@ -249,7 +254,7 @@ The profile rubric has seven named checks. Each gets `pass`, `fail`, or `uncerta
 | factual/action integrity | required DOM text, numbers, action and QR/asset relations visually match their declared bindings | a required fact/action is absent, substituted or visually mis-bound | supplied source/approval evidence is incomplete |
 | mobile readability | fixed review image retains order, clear hierarchy and readable necessary copy | required copy cannot be read or action/QR becomes unusable | the required review screenshot cannot be reproduced |
 
-`fail` on any release-blocking condition writes `evaluation-failed`; one or more `uncertain` checks write `human-review-needed`; `pass` requires all seven checks to pass. The Agent's review uses this decision table rather than free-form aesthetic approval.
+`finalize_evaluation` mechanically derives the only legal verdict from the seven records: any `fail` → `fail`; otherwise any `uncertain` → `human-review-needed`; otherwise all seven `pass` → `pass`. A declared top-level verdict that differs from this derived result is malformed and rejected. A valid `fail` receipt writes `evaluation-failed`; a valid `human-review-needed` receipt writes `human-review-needed`; only the derived `pass` can write `evaluation-passed`. The Agent's review uses this decision table rather than free-form aesthetic approval.
 
 This is an executable workflow gate, not a claim that a local script can prove an Agent literally looked at pixels. The receipt binds the Agent's decision to immutable review evidence, while the Skill's required workflow makes native viewing the action that produces it. Under the stated ordinary-workflow trust model, that is the correct enforcement boundary.
 
@@ -275,11 +280,11 @@ Rendering and review use a checked-in `toolchain-lock.json`. Production render i
 
 Implementation is staged, with a red test before every behavior change:
 
-1. Define canonical JSON/schema parsing, the normative lifecycle transition table, candidate-first rendering and atomic promotion. Test every illegal writer/state pair, missing/stale/illegal records, human approval/rejection bindings and final-name bypasses.
+1. Define canonical JSON/schema parsing, the normative lifecycle transition table, candidate-first rendering and atomic promotion. Test every illegal writer/state pair, both confirmation records, a layout-only repair, source/fact/asset and hero changes returning to the correct confirmation state, stale-session invalidation, human approval/rejection bindings and final-name bypasses.
 2. Harden portable CSS and asset allowlisting. Test external stylesheets, `@import`, remote/file URLs, symlink escapes, unlisted paths and source deletion after packaging.
 3. Build the `chapter-editorial-v1` profile package, component registry and contract validators. Test the current one-column-L03/list-L08/three-item-L04 failure; every active L variant must fail when its root/schema/topology differs from the registry; test hidden/off-canvas/opaque/occluded marker bypasses with the pixel-contribution probe, wrong variants, wrong zone order and bad seams.
 4. Add computed Token/type/signal/chapter/rail/rhythm checks. Test fallback fonts, wrong weights/colors, missing or duplicate semantic signals, structural-index spoofing, artistic-image-only required copy, case-CSS cascade overrides and every numeric profile token boundary.
-5. Add the `prepare_evaluation` → same-Agent native review → `finalize_evaluation` flow, bounded minor-copy inheritance and optional human review. Forward-test a realistic poster request: the Agent must open the complete candidate and risk crops, identify a deliberately injected visual defect not caught by structural checks, record it, repair it and only then promote. Test a one-character body-text correction that preserves measured geometry and is promoted from inherited review; separately test line reflow, changed signal/asset/token/topology and out-of-leaf pixel changes, which must all require a new direct review. Also test stale session/bundle hashes, omitted viewed artifacts, valid failed/uncertain review states, fixed Chromium/DPR/mobile proof and promotion only on a valid finalized pass.
+5. Add the `prepare_evaluation` → same-Agent native review → `finalize_evaluation` flow, bounded minor-copy inheritance and optional human review. Forward-test a realistic poster request: the Agent must open the complete candidate and risk crops, identify a deliberately injected visual defect not caught by structural checks, record it, repair it and only then promote. Test a one-character body-text correction, deletion and shortening that preserve measured geometry and are promoted from inherited review; separately test line reflow, changed signal/asset/token/topology and out-of-leaf pixel changes, which must all require a new direct review. Also test stale session/bundle hashes, omitted viewed artifacts, a top-level verdict that contradicts its seven rubric states, valid failed/uncertain review states, fixed Chromium/DPR/mobile proof and promotion only on a valid finalized pass.
 6. Update legacy docs/commands and retain the approved film-workshop case only as a profile/visual reference fixture. Run the existing portable-HTML tests and distributable-skill checks throughout.
 
 ## Acceptance criteria
