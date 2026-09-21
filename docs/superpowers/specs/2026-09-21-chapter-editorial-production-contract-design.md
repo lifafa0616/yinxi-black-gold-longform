@@ -2,9 +2,16 @@
 
 ## Purpose
 
-Make `chapter-editorial-v1`, distilled from the approved “AI 影视共创免费线下工作坊” case, the default black-gold layout profile. A case must no longer be able to claim an `Lxx` contract, use black-gold tokens, or publish `final.png` without proving those claims against the browser-rendered DOM and a recorded visual evaluation.
+Make the existing black-gold design system executable, and make `chapter-editorial-v1`, distilled from the approved “AI 影视共创免费线下工作坊” case, the default composition profile. A case must no longer be able to claim an `Lxx` contract, use black-gold tokens, or publish `final.png` without proving those claims against the browser-rendered DOM and a recorded visual evaluation.
 
-The profile preserves the approved case’s design language, not its content or fixed eight-section count: continuous charcoal master background, side rails, right-side chapter navigation, restrained deep panels, serif/sans typography, warm-white/body-gray/single-gold hierarchy, and changing editorial rhythm across reading zones.
+The profile preserves the approved case’s composition language, not its content or fixed eight-section count: continuous charcoal master background, side rails, right-side chapter navigation, restrained deep panels, and changing editorial rhythm across reading zones. The global black-gold system separately owns serif/sans typography, the warm-white/body-gray/single-gold hierarchy, and semantic text signals.
+
+## Terms
+
+- **Reference case:** a human-approved output used to establish quality and to evaluate a candidate. It is neither copied nor treated as a source of current-case assets.
+- **Template:** a concrete HTML starting point with fixed content slots. The default workflow must not force every case into the reference case's eight sections or coordinates.
+- **Design system:** shared tokens and rules that remain true across profiles: color, typography, semantic signal, spacing and component hierarchy.
+- **Composition profile:** a reusable arrangement grammar that chooses how the design system appears on a longform. `chapter-editorial-v1` is the default profile: it requires the chapter-oriented chrome and editorial rhythm, while R/L routing determines the number, content and component type of the reading zones.
 
 ## Non-goals
 
@@ -24,15 +31,18 @@ Plan + confirmed copy
   -> promote candidate.png to final.png
 ```
 
-### 1. Executable profile
+### 1. Executable design system and profile
 
-Add `chapter-editorial-v1` as the default profile. Its reusable CSS and DOM conventions supply the real design tokens and chrome:
+Create a global `black-gold-editorial-v1` design system and make `chapter-editorial-v1` its default composition profile. The system owns the real tokens and semantic hierarchy; the profile owns composition chrome. Their reusable CSS and DOM conventions supply:
 
 - `--canvas`, `--panel`, `--title`, `--body`, `--gold`, `--rule`, `--chapter`, `--rail`;
+- named type roles: hero title, section title, module/card title, body, metadata, kicker, index, metric, action and quote/conclusion;
+- the semantic signal rule: the hero title contains exactly one declared key phrase in gold; each later zone declares either no semantic gold signal or one exact signal string with a purpose of `keyword`, `result`, `conclusion`, `quote`, `action` or `metric`; structural indices may use gold but do not count as a semantic signal; body paragraphs never receive blanket gold styling;
+- default type scale and fonts: bundled serif for hero/section/module/action/quote display roles; bundled sans for body/meta/kicker; hero title 110px minimum, section title 56px minimum, module/card title 40px minimum, body/action 36px minimum and metadata 26px minimum. A profile component may use a larger declared value, but a case override cannot silently reduce a role below its token minimum;
 - the two 48px outer rails, content safe axis, optional low-contrast internal grid, and chapter-number slot at the established right-side geometry;
-- canonical classes for frame/zone, content, chapter, rail, panel, index, card, action panel, and profile-owned typography.
+- canonical classes for frame/zone, content, chapter, rail, panel, index, card, action panel and type roles.
 
-`render.html` must declare `data-layout-profile="chapter-editorial-v1"` and import the profile CSS before a case-local override sheet. Case CSS may set content-driven height and assets, but may not redefine a profile token or replace a required component’s geometry.
+`render.html` must declare `data-design-system="black-gold-editorial-v1"` and `data-layout-profile="chapter-editorial-v1"`, then import system CSS and profile CSS before a case-local override sheet. Case CSS may set content-driven height and assets, but may not redefine a system token or replace a required component’s geometry.
 
 ### 2. Machine-readable layout specification
 
@@ -54,7 +64,7 @@ Each approved production case includes `layout-spec.json`, whose schema contains
 }
 ```
 
-The spec is created from the selected R/L route before rendering and is the single contract shared by rendering, DOM validation, visual review, and promotion. It records only structural facts: profile, ordered zones, selected `Lxx`, chapter/navigation use, required component types, item counts, and any real asset slots. It does not duplicate copy or invent coordinates for content that requires natural height.
+The spec is created from the selected R/L route before rendering and is the single contract shared by rendering, DOM validation, visual review, and promotion. It records only structural facts: design system, profile, ordered zones, selected `Lxx`, chapter/navigation use, required component types, item counts, selected type roles, declared semantic signal text/purpose, and any real asset slots. It does not duplicate copy or invent coordinates for content that requires natural height.
 
 ### 3. Contract-to-component mapping
 
@@ -79,9 +89,9 @@ The renderer uses these component classes and `data-layout-component` markers. T
 
 Extend the manifest exporter to collect computed foreground color, background color, font family, component markers, chapter boxes, rail boxes, and per-zone component boxes. Extend the validator to enforce:
 
-- exact profile identity and approved token values on profile-owned elements;
-- bundled serif/sans font usage for title/body roles;
-- exactly one gold signal in each allowed scope;
+- exact design-system/profile identity and approved token values on their owned elements;
+- bundled serif/sans font usage and minimum sizes for all named type roles;
+- the declared gold signal string/purpose and exactly one gold signal in each allowed scope;
 - required rails, chapter boxes, safe-axis geometry, and no chapter overlap when the profile declares navigation;
 - no unapproved case-local override of profile-owned token variables;
 - selected contract geometry and item count from `layout-spec.json`.
