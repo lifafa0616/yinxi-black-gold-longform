@@ -12,6 +12,8 @@ The system is not a reference-image copier and is not an eight-section template:
 
 Every normal case publishes through one mechanism, the **Evaluator**. The Evaluator is not a checklist document and not `evaluation.json`; it is the only orchestrator allowed to decide whether a browser-rendered candidate may become `final.png`. `evaluation.json` is merely its hash-bound result receipt.
 
+The Skill's running Agent already has image-generation and image-viewing capability. The visual decision is therefore a mandatory action by that same Agent, using the generated review bundle; it does **not** call, configure, or depend on a separate visual-model API. Scripts contribute measured facts. They do not pretend to infer aesthetic correctness from those facts.
+
 ## Outcome
 
 ```text
@@ -124,7 +126,7 @@ Every component is marked with `data-layout-component`, zone ownership and stabl
 
 ## Evaluator mechanism
 
-`evaluate_case.py <case>` is the one release decision entry point. It regenerates every derived artifact from the current case and writes `case-contract/evaluation.json` only after all checks complete. It contains five checkers.
+`evaluate_case.py <case>` is the one release decision entry point. It regenerates every derived artifact from the current case and writes `case-contract/evaluation.json` only after all checks complete. Its first four checks are deterministic; its fifth is a required same-Agent review action. A mechanical pass never substitutes for that action.
 
 ### 1. Input check
 
@@ -144,15 +146,19 @@ Freshly invokes the Manifest exporter from the exact `poster.html`; supplied Man
 
 Zones must be an ordered, non-overlapping, 1080px-wide continuous sequence within explicit tolerance. The Evaluator derives every adjacent boundary, then requires a named seam marker with `from-zone` / `to-zone` identifiers located in that boundary corridor. It captures the specified seam pixels rather than accepting arbitrary dark points.
 
-### 5. Visual check
+### 5. Visual check — same-Agent, mandatory
 
-Builds a deterministic `review-bundle/`: complete candidate, first-frame crop, named risk-zone crops, fixed mobile-view screenshot, profile baseline ID/hash, computed design summary and validation result. The visual evaluator judges hero integration, material quality, editorial rhythm, profile coherence and mobile readability against an explicit rubric. It returns `pass`, `fail`, or `human-review-needed`.
+The Evaluator first builds a deterministic `review-bundle/`: full candidate, first-frame crop, named risk-zone crops, fixed mobile-view screenshot, profile baseline ID/hash, computed design summary and deterministic validation result. The same Agent running this Skill must then open the full candidate and the supplied crops with its native image/browser viewing capability before it returns a verdict. It may not infer a visual pass from HTML, CSS, the Manifest, or prior approval alone.
+
+The Agent follows the profile rubric and records one of `pass`, `fail`, or `human-review-needed` in `visual-review.json`: candidate/review-bundle hashes; baseline ID/hash; viewed artifacts; each rubric finding; verdict; and concrete repair instructions on failure. The rubric judges hero integration, material quality, editorial rhythm, profile coherence, text hierarchy, semantic-gold restraint and mobile readability. `evaluate_case.py` rejects a missing, stale, malformed or non-pass review receipt; it does not contain an imaginary vision classifier.
+
+This is an executable workflow gate, not a claim that a local script can prove an Agent literally looked at pixels. The receipt binds the Agent's decision to immutable review evidence, while the Skill's required workflow makes native viewing the action that produces it. Under the stated ordinary-workflow trust model, that is the correct enforcement boundary.
 
 Mobile review uses a fixed Chromium version, 1080px source canvas, documented DPR, documented scale-to-mobile screenshot method and a versioned readability rubric. It is an inspection of the fixed-width longform, not a claim of responsive-page support.
 
 ## Evaluator result and release
 
-`evaluation.json` records evaluator version, input/spec/profile hashes, candidate hash, fresh manifest hash, validation result, review-bundle hashes, all checker results and named failure evidence.
+`evaluation.json` records evaluator version, input/spec/profile hashes, candidate hash, fresh manifest hash, validation result, review-bundle hashes, the hash-bound `visual-review.json`, all checker results and named failure evidence.
 
 - Any input, route, design-system or render failure yields `evaluation-failed`.
 - A passing visual check yields `evaluation-passed`; promotion is automatic for an existing approved profile unless the user requested review.
@@ -174,7 +180,7 @@ Implementation is staged, with a red test before every behavior change:
 2. Harden portable CSS and asset allowlisting. Test external stylesheets, `@import`, remote/file URLs, symlink escapes, unlisted paths and source deletion after packaging.
 3. Build profile components and contract validators. Test the current one-column-L03/list-L08/three-item-L04 failure, hidden/off-canvas/opaque/occluded marker bypasses, wrong variants, wrong zone order and bad seams.
 4. Add computed Token/type/signal/chapter/rail/rhythm checks. Test fallback fonts, wrong weights/colors, missing or duplicate semantic signals, structural-index spoofing and case-CSS cascade overrides.
-5. Add review-bundle, visual-result and optional human-review flow. Test stale bundle hashes, failed/uncertain review states, fixed mobile evidence and automatic promotion only on a valid pass.
+5. Add review-bundle, same-Agent visual-review receipt and optional human-review flow. Forward-test a realistic poster request: the Agent must open the complete candidate and risk crops, identify a deliberately injected visual defect not caught by structural checks, record it, repair it and only then promote. Also test stale bundle hashes, failed/uncertain review states, fixed mobile evidence and automatic promotion only on a valid pass.
 6. Update legacy docs/commands and retain the approved film-workshop case only as a profile/visual reference fixture. Run the existing portable-HTML tests and distributable-skill checks throughout.
 
 ## Acceptance criteria
