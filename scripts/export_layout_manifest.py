@@ -82,6 +82,41 @@ EXPORT_SCRIPT = r"""() => {
     contract: zone.dataset.contract || null,
     bbox: box(zone),
   }));
+  const chapters = Array.from(document.querySelectorAll("[data-layout-chapter]")).map((chapter) => {
+    const title = chapter.querySelector("[data-chapter-title]");
+    if (!title) throw new Error("every [data-layout-chapter] requires one [data-chapter-title]");
+    return {id: chapter.dataset.layoutChapter, bbox: box(chapter), title_top: box(title)[1]};
+  });
+  const protected_boxes = Array.from(document.querySelectorAll("[data-protected-text]")).map((element) => ({
+    id: element.dataset.protectedText || null,
+    bbox: box(element),
+  }));
+  const one = (group, selector, label) => {
+    const matches = group.querySelectorAll(selector);
+    if (matches.length !== 1) throw new Error(`${label} requires exactly one ${selector}`);
+    return matches[0];
+  };
+  const portraits = Array.from(document.querySelectorAll("[data-portrait]")).map((group) => {
+    const mode = group.dataset.portrait;
+    const intro = one(group, "[data-portrait-intro]", "portrait");
+    const region = one(group, "[data-portrait-related-text-region]", "portrait");
+    const subject = one(group, "[data-portrait-subject]", "portrait");
+    const regionBox = box(region);
+    const subjectBox = box(subject);
+    const portrait = {
+      portrait_mode: mode,
+      intro_text_top: box(intro)[1],
+      related_text_region: {top: regionBox[1], bottom: number(regionBox[1] + regionBox[3])},
+    };
+    if (mode === "transparent") {
+      portrait.visible_head_top = subjectBox[1];
+      portrait.visible_bbox = subjectBox;
+    } else {
+      portrait.image_rect_top = subjectBox[1];
+      portrait.image_rect = subjectBox;
+    }
+    return portrait;
+  });
   const samplePoint = (element) => {
     const rect = element.getBoundingClientRect();
     return [Math.round(rect.left + window.scrollX + rect.width / 2), Math.round(rect.top + window.scrollY + rect.height / 2)];
@@ -111,6 +146,9 @@ EXPORT_SCRIPT = r"""() => {
     text_blocks: topLevelText,
     containers,
     reading_zones: zones,
+    chapters,
+    protected_boxes,
+    portraits,
     cta_groups: Array.from(ctaIds).map((id) => ({id})),
     background_samples,
     seams,
@@ -119,27 +157,30 @@ EXPORT_SCRIPT = r"""() => {
 }"""
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Export a real Chromium layout manifest from portable poster.html.")
-    parser.add_argument("--input", required=True, type=Path, help="self-contained poster.html")
-    parser.add_argument("--output", required=True, type=Path, help="generated layout-manifest.json")
-    args = parser.parse_args()
-    try:
-        document = args.input.read_text(encoding="utf-8")
-        validate_portable_document(document)
-    except (OSError, ValueError) as error:
-        parser.error(f"input must be a portable poster.html made by package_poster_html.py: {error}")
+def poster_sha256(input_path: Path) -> str:
+    """Hash the portable file's stored bytes, without newline translation."""
+    return hashlib.sha256(input_path.read_bytes()).hexdigest()
+
+
+def build_manifest(input_path: Path) -> dict:
+    """Measure one portable poster through Chromium and return its manifest.
+
+    This is intentionally shared by the exporter and verifier: verification
+    remeasures the supplied poster instead of trusting manifest provenance
+    strings or a caller-provided hash.
+    """
+    document_bytes = input_path.read_bytes()
+    document = document_bytes.decode("utf-8")
+    validate_portable_document(document)
     try:
         from playwright.sync_api import sync_playwright
-    except ModuleNotFoundError:
-        print("Playwright is not installed. Run: python3 -m pip install -r requirements.txt", file=sys.stderr)
-        return 2
+    except ModuleNotFoundError as error:
+        raise RuntimeError("Playwright is not installed. Run: python3 -m pip install -r requirements.txt") from error
 
-    args.output.parent.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch()
         page = browser.new_page(viewport={"width": CANVAS_WIDTH, "height": 1600}, device_scale_factor=1)
-        page.goto(args.input.resolve().as_uri(), wait_until="networkidle")
+        page.goto(input_path.resolve().as_uri(), wait_until="networkidle")
         fonts_ready = page.evaluate("""async () => {
             await document.fonts.ready;
             return document.fonts.check('700 32px "Yinxi Noto Serif SC"') &&
@@ -147,31 +188,40 @@ def main():
         }""")
         if not fonts_ready:
             browser.close()
-            print("bundled production fonts did not load; refusing to export layout from fallback fonts", file=sys.stderr)
-            return 1
+            raise RuntimeError("bundled production fonts did not load; refusing to export layout from fallback fonts")
         try:
             manifest = page.evaluate(EXPORT_SCRIPT)
         except Exception as error:
+            raise RuntimeError(f"could not measure poster layout: {error}") from error
+        finally:
             browser.close()
-            print(f"could not measure poster layout: {error}", file=sys.stderr)
-            return 1
-        browser.close()
 
     manifest.update({
         "producer": "playwright-dom",
         "layout_engine": "playwright-chromium",
-        "poster_sha256": hashlib.sha256(document.encode("utf-8")).hexdigest(),
+        "poster_sha256": poster_sha256(input_path),
         "contract": "yinxi-layout-manifest-v2",
     })
     if manifest["canvas"]["width"] != CANVAS_WIDTH or manifest["canvas"]["color"] != CANVAS_COLOR:
-        print("poster.html must declare #longform-canvas data-canvas-color=\"#10100F\" at 1080px", file=sys.stderr)
-        return 1
+        raise RuntimeError("poster.html must declare #longform-canvas data-canvas-color=\"#10100F\" at 1080px")
     if manifest["hero"] is None:
-        print("poster.html must contain exactly one [data-hero] and one [data-hero-copy]", file=sys.stderr)
-        return 1
+        raise RuntimeError("poster.html must contain exactly one [data-hero] and one [data-hero-copy]")
     if not manifest["background_samples"] or not manifest["seams"]:
-        print("poster.html must include [data-background-sample] and [data-seam-sample] markers on clear canvas", file=sys.stderr)
+        raise RuntimeError("poster.html must include [data-background-sample] and [data-seam-sample] markers on clear canvas")
+    return manifest
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Export a real Chromium layout manifest from portable poster.html.")
+    parser.add_argument("--input", required=True, type=Path, help="self-contained poster.html")
+    parser.add_argument("--output", required=True, type=Path, help="generated layout-manifest.json")
+    args = parser.parse_args()
+    try:
+        manifest = build_manifest(args.input)
+    except (OSError, UnicodeDecodeError, ValueError, RuntimeError) as error:
+        parser.error(f"input must be a portable poster.html made by package_poster_html.py: {error}")
         return 1
+    args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"measured: {args.output}")
     return 0

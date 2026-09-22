@@ -55,8 +55,8 @@
 ## 5. 连续 HTML 与正式交付
 
 1. 用 `render.html` 建立连续 1080px 宽的 HTML/CSS/SVG 编辑源；背景、网格、轨道、资产和文字都在一张画布中定位。
-2. 在 `poster.html` 中按 `text-rendering-rules.md` 标注可测元素，再运行 `export_layout_manifest.py`。它从浏览器实际布局树取得文字行、容器、阅读区、主视觉和高风险元素坐标，生成 `layout-manifest.json`；不得手填坐标。
-3. 执行 `package_poster_html.py`。它把本地图片、CSS 资源和内置字体嵌入单个 `poster.html`。
+2. 在 `render.html` 中按 `text-rendering-rules.md` 标注可测元素，再执行 `package_poster_html.py`。它把本地图片、CSS 资源和内置字体嵌入单个 `poster.html`。
+3. 对这份 `poster.html` 运行 `export_layout_manifest.py`。它从浏览器实际布局树取得文字行、容器、阅读区、主视觉和高风险元素坐标，生成 `layout-manifest.json`；不得手填坐标。验收器会重新测量同一 `poster.html`，因此手填或改写后的 Manifest 会失败。
 4. 用 Playwright Chromium 渲染这份 `poster.html` 为 `final.png`。不能用第二套排版或字体渲染器。
 5. 对非常高的连续画布，允许同一 Chromium 从同一 DOM 分段截图；拼接只复制像素，不重新布局、重采样 SVG 或计算字体。
 

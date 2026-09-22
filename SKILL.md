@@ -91,7 +91,7 @@ python3 -m venv .venv
 
 打包器会把本地图片、CSS 图片资源和两套正式字体嵌入 `poster.html`。渲染器只接受这种自包含 HTML，并固定使用 Playwright Chromium；字体、图片、画布宽度或 Chromium 不符合要求时必须失败，不得回退到系统字体、外部图片、`sips`、ImageMagick 或另一套排版引擎。超长图如需分段，只能从同一浏览器 DOM 取像素条带后逐像素拼合。
 
-`export_layout_manifest.py` 也必须运行。它从同一份 `poster.html` 的 Chromium 实际布局树读取文字行、字号、文字框、卡片、二维码、CTA、首帧主体与背景采样点；校验器拒绝手填数字或来自另一份 HTML 的 Manifest。标记写法见 `text-rendering-rules.md`。
+`export_layout_manifest.py` 也必须在打包完成后运行。它从同一份 `poster.html` 的 Chromium 实际布局树读取文字行、字号、文字框、卡片、二维码、CTA、首帧主体与背景采样点；校验器会重新测量该 HTML，拒绝手填、改写或来自另一份 HTML 的 Manifest。标记写法见 `text-rendering-rules.md`。
 
 ## 生产预算与停止条件
 

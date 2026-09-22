@@ -78,6 +78,14 @@
     <h2 data-layout-role="module-title">模块标题</h2>
     <p data-layout-role="body">说明文字</p>
   </article>
+  <section data-layout-chapter="chapter-01">
+    <h2 data-chapter-title>章节标题</h2>
+  </section>
+  <p data-protected-text="claim-01">不得被章节压住的关键事实</p>
+  <section data-portrait="transparent">
+    <p data-portrait-intro>人物介绍</p>
+    <div data-portrait-related-text-region><img data-portrait-subject src="mentor.png" alt=""></div>
+  </section>
   <div data-layout-role="price" data-cta-group="signup">9.9 元</div>
   <img data-layout-role="qr" data-cta-group="signup" src="qr.png" alt="报名二维码">
 </main>
@@ -87,4 +95,6 @@
 - 每个阅读区使用 `data-reading-zone` 和真实的 `data-contract="Lxx"`。每个需检查内边距的卡片/容器使用唯一 `data-layout-container`；其内文字、价格、二维码使用 `data-layout-role`。
 - `data-layout-role` 只标在实际承载文字或二维码的叶子元素上，避免父子重复标记。取值使用 `title/module-title/body/price/action/meta/data/metric/qr`；独立单字或单数字数据另加 `data-independent-data="true"`。
 - 每张图至少设置一个位于真实 `#10100F` 空白画布上的 `data-background-sample`；每个阅读区连接处设置一个位于真实空白母版上的 `data-seam-sample`。这些必须是可测的实际画面位置，而不是隐藏元素。
-- 测量器会读取实际换行、字号、文字框、容器框、溢出、二维码与价格的关系，并把 `poster.html` 的 SHA256 写入 Manifest。之后若改动 HTML，必须重新打包、测量、导出 PNG 和检查；旧 Manifest 自动失效。
+- 存在章节时，章节容器使用 `data-layout-chapter`，且必须恰有一个 `data-chapter-title`；存在需要避让的事实文字时，使用 `data-protected-text`。它们由测量器分别导出章节和保护框，不能手填。
+- 存在人物时，以 `data-portrait="transparent|masked|source-crop"` 包住该人物，并恰各含一个 `data-portrait-intro`、`data-portrait-related-text-region` 和 `data-portrait-subject`；测量器据此导出人物、介绍文字与相关文字区的实际几何。
+- 测量器会读取实际换行、字号、文字框、容器框、溢出、二维码与价格的关系，并把 `poster.html` 的原始字节 SHA256 写入 Manifest。验收器会重新测量同一份 HTML，并拒绝任何与新结果不同的 Manifest；之后若改动 HTML，必须重新打包、测量、导出 PNG 和检查。
