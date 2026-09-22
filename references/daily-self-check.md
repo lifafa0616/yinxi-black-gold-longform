@@ -5,16 +5,17 @@
 ## A. 先看生产真源与事实
 
 ```text
-□ source_copy、fact_locks、display_copy 和用户确认记录均在 Plan 中可追溯
-□ 未确认展示文案或首帧策略时，没有调用 ImageGen、处理人像或完整渲染
-□ 首帧策略与确认稿一致：mentor-portrait 或 imagegen
+□ source_copy、全部 fact_locks、display_copy 来源映射和用户确认记录均在 Plan 中可追溯；原文事实均未改写含义
+□ 展示文案未确认或正在修订时，没有启动首帧判断、调用 ImageGen、处理人像或完整渲染
+□ 用户侧确认稿未展示 R/L、阅读区、长图结构、视觉方向、资产预算或 “ImageGen” 等技术表述
+□ 文案确认后才完成人像判断；内部首帧策略与用户对人像的答复一致：mentor-portrait 或 imagegen
 □ mentor-portrait 只使用确认的真实原图；imagegen 主视觉解释标题对象、关系或变化
 □ poster.html 是自包含文件：图片和两套正式字体已内嵌，无本机路径或网络素材依赖
 □ final.png 由该 poster.html 经 Playwright Chromium 导出；未用第二套排版引擎
 □ 宽度为 1080px；若超长分段，证明记录其来自同一浏览器 DOM 的纯像素拼接
 □ 标题、正文、数字、价格、日期和二维码说明均为精确后置文字
 □ 主标题 ≥110px；模块标题 ≥40px；正文/价格/行动 ≥36px；说明/元信息 ≥26px
-□ 已运行 Layout Manifest 检查；真实 PNG、背景采样、阅读区连接和 CTA 数据组均通过
+□ 已先运行 `export_layout_manifest.py`，再运行 Layout Manifest 检查；Manifest 与当前 poster.html SHA256 一致，真实 PNG、背景采样、阅读区连接和 CTA 数据组均通过
 ```
 
 ## B. 再看完整连续图与 Mobile View Check
@@ -24,7 +25,7 @@
 □ 内容多时通过扩高、拆区或重组解决，不以缩字、挤卡或无意义装饰解决
 □ 浏览器 Mobile View Check（约 1/3 视觉比例）中标题、正文、数字和 CTA 可读
 □ 主标题有一处已声明的金色关键词；每区额外金色短语最多一处且承担语义职责
-□ 首帧恰有一个视觉中心、文字安静区干净，主视觉可见 bbox 没有造成无意义上方留白
+□ 首帧恰有一个视觉中心、文字安静区干净；浏览器实测主视觉可见 bbox 与文案锚点满足 64–144px 顶部间距和最小可见高度，未造成无意义上方留白
 □ 主视觉关系、透视、材质、边界和无烘焙文字均完成局部目检；不是独立矩形图片卡
 □ transparent 人像以可见头顶对齐 intro_text_top；masked/source-crop 以图片矩形顶部对齐；头顶、脸和下巴完整
 □ 人像与对应姓名、身份和介绍归属明确；无白边、灰边、错误底板或无理由侵入文字区

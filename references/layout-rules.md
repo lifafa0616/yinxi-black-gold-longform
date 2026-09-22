@@ -121,12 +121,16 @@ track-safe text axis x=112–968（外侧轨道 + 32px 内缩时）
 - 禁止 `NEXT`、翻页箭头、按钮式“下一章”或会被理解为交互控件的转场。
 - 若阅读区底部出现无意义大块留白，优先扩展当前信息组、延长既有背景结构或重分配模块位置；不以伪交互提示填空。
 
-## 附录：高风险布局 Layout Manifest（条件读取）
+## 附录：浏览器实测 Layout Manifest（所有正式案例）
 
-只在卡片、多列、章节号、人物并列或其他高风险坐标布局中生成 `<case>/layout-manifest.json`。它必须从实际渲染坐标导出，不能凭目测补写；用于检查坐标、字体、容器与连续性，不替代主视觉语义、材质、透视或品牌审美的目视判断。校验时还必须读取 Playwright 直接导出的最终 PNG，不能只检查 Manifest 内部是否自洽。
+每个正式案例都生成 `<case>/layout-manifest.json`。它必须由 `export_layout_manifest.py` 从当前 `poster.html` 的 Chromium 实际布局树导出，不能凭目测补写。它用于检查真实换行、溢出、卡片内边距、二维码与文字冲突、首帧几何和连续性，不替代主视觉语义、材质、透视或品牌审美的目视判断。校验时还必须读取 Playwright 直接导出的最终 PNG，不能只检查 Manifest 内部是否自洽。
 
 ```json
 {
+  "producer": "playwright-dom",
+  "layout_engine": "playwright-chromium",
+  "poster_sha256": "由测量器写入",
+  "contract": "yinxi-layout-manifest-v2",
   "canvas": {"width": 1080, "color": "#10100F"},
   "reading_zones": [{"id": "V1", "contract": "L01"}],
   "hero": {"strategy": "imagegen", "copy_anchor_bottom": 620, "copy_group_height": 280, "visible_bbox": [112, 700, 856, 760]},
@@ -140,7 +144,7 @@ track-safe text axis x=112–968（外侧轨道 + 32px 内缩时）
 
 | 条件对象 | 必须记录 |
 |---|---|
-| 所有案例 | `canvas`、阅读区 `Lxx` 序列、`background_samples` 与阅读区边界 `seams[].sample_points` 的真实 PNG 采样 |
+| 所有案例 | `producer/layout_engine/poster_sha256`、`canvas`、阅读区 `Lxx` 序列、`background_samples` 与阅读区边界 `seams[].sample_points` 的真实 PNG 采样 |
 | 首帧 | `copy_anchor_bottom`、`copy_group_height`、主视觉实际 `visible_bbox`；不得用图片画布 bbox 代替 |
 | 渲染真源 | `poster.html`（资产与字体内嵌）、`render-proof.json`：`engine=playwright-chromium`、正式字体和图片已加载、浏览器栅格来自同一布局引擎；超长时只允许该浏览器的像素条带拼接 |
 | 换行文字 | 每个发生换行的 `title` / `module-title` / `body` 的 `rendered_lines`、实际 `font_size`；行数据从最终浏览器渲染树导出 |
@@ -149,4 +153,4 @@ track-safe text axis x=112–968（外侧轨道 + 32px 内缩时）
 | 章节号 | bbox、`title_top`、受保护文字 bbox |
 | 人物 | `portrait_mode`、`intro_text_top`、关联文字区 top/bottom；`transparent` 记录 `visible_head_top` 与 `visible_bbox`，`masked/source-crop` 记录 `image_rect_top` 与 `image_rect` |
 
-使用：`.venv/bin/python scripts/verify-case-layout.py <case>/layout-manifest.json --poster-html <case>/poster.html --png <case>/final.png --render-proof <case>/render-proof.json`。验证失败必须回到布局；渲染器无法导出真实坐标、真实 PNG 或渲染证明时，该案例不能写 `agent-checked`。
+先使用：`.venv/bin/python scripts/export_layout_manifest.py --input <case>/poster.html --output <case>/layout-manifest.json`；再使用：`.venv/bin/python scripts/verify-case-layout.py <case>/layout-manifest.json --poster-html <case>/poster.html --png <case>/final.png --render-proof <case>/render-proof.json`。验证失败必须回到布局；测量器无法导出真实坐标、真实 PNG 或渲染证明时，该案例不能写 `agent-checked`。具体 HTML 标记见 `text-rendering-rules.md`，不得改为手写 JSON。

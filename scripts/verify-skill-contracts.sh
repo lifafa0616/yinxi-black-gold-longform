@@ -41,7 +41,9 @@ for file in \
   assets/baseline/01-hero-approved.png \
   assets/baseline/poster-preview-approved.jpg \
   scripts/package_poster_html.py \
+  scripts/create_case_plan.py \
   scripts/render_longform.py \
+  scripts/export_layout_manifest.py \
   scripts/verify-case-layout.py
 do
   require_file "$file"
@@ -49,6 +51,7 @@ done
 
 require_text SKILL.md "固定渲染命令"
 require_text SKILL.md "Playwright Chromium"
+require_text SKILL.md "export_layout_manifest.py"
 require_text SKILL.md "配方选择索引"
 require_text references/black-gold-system.md "固定 Token"
 require_text references/black-gold-system.md "人物呈现"
@@ -56,7 +59,7 @@ require_text references/daily-plan-template.md "内容与营销确认稿"
 require_text references/content-planning.md "阅读区签名"
 require_text references/production-workflow.md "mentor-portrait"
 require_text references/daily-self-check.md "Mobile View Check"
-require_text references/layout-rules.md "高风险布局 Layout Manifest"
+require_text references/layout-rules.md "浏览器实测 Layout Manifest"
 require_text references/layout-contracts.md "同类内容过量时的合法处理"
 
 personal_root='/'"Users/"

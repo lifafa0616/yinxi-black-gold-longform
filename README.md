@@ -78,12 +78,12 @@ python3 -m venv .venv
 .venv/bin/playwright install chromium
 ```
 
-随后按 [SKILL.md](SKILL.md) 的三条命令：先打包 `poster.html`，再渲染 `final.png`，最后运行 Layout Manifest 校验。
+随后按 [SKILL.md](SKILL.md) 的四条命令：先打包 `poster.html`，由 Chromium 实测生成 Layout Manifest，再渲染 `final.png`，最后校验。Manifest 会绑定当前 HTML；改动 HTML 后必须重新测量和导出。
 
 ## 能力与复核边界
 
 - **文字准确性**：原文和事实锁定项可追溯；确认后的展示文字以 HTML 后置渲染。这是 Skill 最确定的能力。
-- **排版执行**：字体、图片和连续画布由同一份 `poster.html` 和浏览器渲染；规则可检查字号下限、容器边界、孤行、主视觉位置、CTA 数据组和背景采样。
+- **排版执行**：字体、图片和连续画布由同一份 `poster.html` 和浏览器渲染；浏览器实际测量文字行、溢出、容器边界、主视觉位置、CTA 数据组与背景采样，校验器拒绝手填或来自另一份 HTML 的检查数据。
 - **视觉判断**：ImageGen 的材质、透视和是否真正贴合主题，仍需人查看局部资产和最终图。
 - **人像精修**：Skill 选择透明、蒙版或裁切模式并建立基本图文关系；发丝级抠图与多人像像素级微调留给后续编辑工具。
 

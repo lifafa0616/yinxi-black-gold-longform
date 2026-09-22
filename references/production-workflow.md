@@ -2,30 +2,38 @@
 
 本流程的唯一生产真源是：`1080px 连续 HTML → 自包含 poster.html → 同一 Chromium 导出 final.png`。阅读区不是固定比例帧；高度由已确认内容决定。
 
+预确认阶段不是“素材盘点”或“建立生产工程”。它只分析当前对话输入并准备确认稿。
+
 ## 1. 锁定输入与两层文案
 
-先保存完整 `source_copy`，再盘点 `fact_locks`：人名、机构、品牌、产品、日期、时间、地点、价格、数量、课程次数、权益、CTA、二维码动作，以及用户要求逐字保留的内容。
+先保存完整 `source_copy`，再建立 `current_input_allowlist`：只包括用户在当前对话中明确提供或指定路径的素材。不得扫描工作目录、上级目录、历史案例、参考图库或旧输出。Skill 的批准基线只能阅读以校准质量，绝不属于可用素材。
+
+再盘点 `fact_locks`。`fact_locks` 覆盖原文中所有事实性信息：人名、机构、品牌、产品、日期、时间、地点、价格、数量、课程次数、权益、CTA、二维码动作、经历、成果和任何可验证主张。它们默认冻结，不是等待用户挑选的可选信息。
 
 在不改变 `fact_locks` 的前提下，分析并生成 `display_copy`：主标题、副标题、核心卖点、证据、利益点和行动信息。`display_copy` 可以压缩重复句、调整阅读顺序和提炼营销重点；它不能静默篡改事实，也不能覆盖原文来源。
 
 ## 2. 先确认，再生产
 
-复制 `daily-plan-template.md` 为案例 `plan.md`，完成输入、内容分析、营销分析、R 配方、阅读区、资产和主题判断后，输出一份用户确认稿：
+若用户明确指定输出根目录，可用 `create_case_plan.py` 在 `cases/<语义化名称>/plan.md` 创建唯一预确认文件；若未指定目录，先在对话准备确认稿。不得建立 `assets/`、`frames/`、`render.html`、`poster.html` 或 `final.png`。
+
+完成输入、内容分析和营销分析后，先输出一份用户确认稿：
 
 ```text
 展示主标题 / 副标题：
-核心卖点与阅读顺序：
-必须逐字保留的事实：
-首帧策略：mentor-portrait / imagegen
-若为 imagegen：主实体、辅助关系、文字安静区与默认生成预算：
-阅读区序列及 Lxx：
+重点内容：
+报名 / 行动信息：
+请确认以上展示文案；如需修改，请直接指出要改的内容。
 ```
 
-- 展示文案或事实锁定项尚未确认：`awaiting-copy-confirmation`。
-- 首帧策略尚未确认：`awaiting-hero-confirmation`。
+- 用户在这一步只确认展示文案是否准确、营销重点是否正确；不展示或确认事实锁定项、原文映射、R/L、阅读区、长图结构、视觉方向、资产预算或技术路线。
+- 展示文案尚未确认：`awaiting-copy-confirmation`。
 - 素材、事实或规则有缺口：`input-blocked` 或 `preflight-blocked`。
 
-上述状态下不得调用 ImageGen、处理人像、开始排版或完整导出。用户确认后才写 `approved-for-production`。
+用户要求修改时，只更新展示文案，再发送同样简洁的确认稿；不得开始首帧判断或任何生产动作。
+
+展示文案确认后，才进行首帧人像判断：没有人像输入时，问用户是否有希望放在首帧展示的人像可提供；用户回答没有后，内部直接走主题主视觉。已有导师/嘉宾人像时，只问是否放在首帧作为主视觉；回答是则走人像首帧，回答否则走主题主视觉。不得向用户使用 “ImageGen 方案” 等技术表述。
+
+上述状态下不得调用 ImageGen、处理人像、复制素材、创建资产/诊断目录、开始排版或完整导出。展示文案确认且首帧路线确定后才写 `approved-for-production`。
 
 ## 3. 阅读区与版式
 
@@ -47,13 +55,14 @@
 ## 5. 连续 HTML 与正式交付
 
 1. 用 `render.html` 建立连续 1080px 宽的 HTML/CSS/SVG 编辑源；背景、网格、轨道、资产和文字都在一张画布中定位。
-2. 从浏览器实际布局树取得文字行、容器、阅读区、主视觉和高风险元素坐标，生成 `layout-manifest.json`。
+2. 在 `poster.html` 中按 `text-rendering-rules.md` 标注可测元素，再运行 `export_layout_manifest.py`。它从浏览器实际布局树取得文字行、容器、阅读区、主视觉和高风险元素坐标，生成 `layout-manifest.json`；不得手填坐标。
 3. 执行 `package_poster_html.py`。它把本地图片、CSS 资源和内置字体嵌入单个 `poster.html`。
 4. 用 Playwright Chromium 渲染这份 `poster.html` 为 `final.png`。不能用第二套排版或字体渲染器。
 5. 对非常高的连续画布，允许同一 Chromium 从同一 DOM 分段截图；拼接只复制像素，不重新布局、重采样 SVG 或计算字体。
 
 ```bash
 .venv/bin/python scripts/package_poster_html.py --input <case>/render.html --output <case>/poster.html --proof <case>/poster-proof.json
+.venv/bin/python scripts/export_layout_manifest.py --input <case>/poster.html --output <case>/layout-manifest.json
 .venv/bin/python scripts/render_longform.py --input <case>/poster.html --output <case>/final.png --render-proof <case>/render-proof.json
 .venv/bin/python scripts/verify-case-layout.py <case>/layout-manifest.json --poster-html <case>/poster.html --png <case>/final.png --render-proof <case>/render-proof.json
 ```

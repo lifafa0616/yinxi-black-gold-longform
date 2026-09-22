@@ -61,3 +61,30 @@
 - `render.html` 是案例编辑源；`poster.html` 是正式可编辑母版。它必须内嵌图片与正式字体，用于固定文案、字体、换行、坐标与后续小范围改字。
 - 正式交付清单报告 `poster.html`、由它导出的 `1080px` `final.png` 和 `plan.md`；不交付独立 360px 缩略预览。
 - 工具记录只保存源文件路径、渲染命令、结果尺寸和检查结论；不得复制嵌入式图片 data URL、base64 或二进制内容到 Plan、日志或对话。
+
+## 6. 浏览器实测标记（黑金 Skill 必须使用）
+
+`layout-manifest.json` 不允许由 Agent 手填。制作 `render.html` 时，为承载阅读任务的元素加入下列标记；打包后由 `export_layout_manifest.py` 从 `poster.html` 的 Chromium 实际布局树读出数值。
+
+```html
+<main id="longform-canvas" data-canvas-color="#10100F">
+  <section data-reading-zone="V1" data-contract="L01">
+    <div data-hero-copy>…标题与必要副标…</div>
+    <img data-hero="imagegen" src="hero.png" alt="">
+    <i data-background-sample aria-hidden="true"></i>
+  </section>
+  <i data-seam-sample="V1-V2" aria-hidden="true"></i>
+  <article data-layout-container="benefit-01">
+    <h2 data-layout-role="module-title">模块标题</h2>
+    <p data-layout-role="body">说明文字</p>
+  </article>
+  <div data-layout-role="price" data-cta-group="signup">9.9 元</div>
+  <img data-layout-role="qr" data-cta-group="signup" src="qr.png" alt="报名二维码">
+</main>
+```
+
+- `data-hero` 只能标在实际可见的主视觉主体上，不能标在整块透明图片画布或外围包装器；取值必须是 `imagegen` 或 `mentor-portrait`。`data-hero-copy` 只包住首帧必要文字组。
+- 每个阅读区使用 `data-reading-zone` 和真实的 `data-contract="Lxx"`。每个需检查内边距的卡片/容器使用唯一 `data-layout-container`；其内文字、价格、二维码使用 `data-layout-role`。
+- `data-layout-role` 只标在实际承载文字或二维码的叶子元素上，避免父子重复标记。取值使用 `title/module-title/body/price/action/meta/data/metric/qr`；独立单字或单数字数据另加 `data-independent-data="true"`。
+- 每张图至少设置一个位于真实 `#10100F` 空白画布上的 `data-background-sample`；每个阅读区连接处设置一个位于真实空白母版上的 `data-seam-sample`。这些必须是可测的实际画面位置，而不是隐藏元素。
+- 测量器会读取实际换行、字号、文字框、容器框、溢出、二维码与价格的关系，并把 `poster.html` 的 SHA256 写入 Manifest。之后若改动 HTML，必须重新打包、测量、导出 PNG 和检查；旧 Manifest 自动失效。
