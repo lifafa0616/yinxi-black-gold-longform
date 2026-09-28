@@ -8,8 +8,8 @@
 - 本项目的字号、边距、内容区域、间距和坐标均以 `1080px` 宽设计母版为计量基准。内容增加时优先选择匹配的信息结构、扩展阅读区或总高度；可按本文件的 8px 边距梯度扩大正文宽度，但不得缩小字号下限。
 - 阅读区是连续画布中的内容段；其高度由实际内容和正式字体决定，不使用固定 `9:16` 或 `3:4` 生产单位。
 - 总画布为 `1080 × dynamic-height`。诊断 `frame` 只允许从最终 PNG 裁出，不是背景切片或生产单元。
-- 最终检查对象是完整连续图、浏览器 Mobile View Check 与命中风险区的诊断裁片。
-- 模型返回的原始资产尺寸与手机预览尺寸不等于设计母版尺寸；原始资产按比例适配到母版，最终必须核验实际像素宽度与 1080px 基准下的版式数值，不能只在提示词中声明尺寸。不得非等比拉伸或用整图缩放代替版式验收。
+- 最终检查对象是完整连续图、浏览器实测的字号/换行/溢出/碰撞数据与命中风险区诊断裁片；不设置主观手机比例检查。
+- 模型返回的原始资产尺寸与设计母版尺寸不等同；原始资产按比例适配到母版，最终必须核验实际像素宽度与 1080px 基准下的版式数值，不能只在提示词中声明尺寸。不得非等比拉伸或用整图缩放代替版式验收。
 
 ## 2. 母版合成架构
 
@@ -53,6 +53,13 @@ track-safe text axis x=112–968（外侧轨道 + 32px 内缩时）
 - 同组面板的外边缘、列宽、行高和相邻间隙必须一致；面板组的首尾边缘应与其关联文字轴或已声明的网格槽位对齐。面板之间的空隙使用网格 gutter 或其整数倍，不以视觉猜测调整。
 - 外侧轨道是背景结构，不是内容边缘。默认 `M=80px` 且启用外侧轨道时，标题、正文、数据组和承载它们的内容面板共同对齐 `x=112–968`；若降低 `M`，必须同步移动 / 删除轨道或重设安全轴，保证轨道与内容之间仍有至少 `32px` 净距。图像或证据可延展至内容块边缘，文字与容器不得被拖到轨道边缘。
 - 内部装饰竖线离外侧轨道不足 `64px` 时必须删除或重排；不得用过密栅格伪造信息密度。
+- 首帧 `data-hero-cover` 是封面而非大阅读模块：不得有章节号或 `data-major-module`。首帧后的每个大阅读模块使用右侧低对比章节导航号，从 `01` 连续递增；号顶与左侧眉题/章节标签顶对齐 `±8px`，不与下方大标题对齐。章节号必须显著大于模块内部 `01/02` 索引，并通过浏览器实测的右槽、对齐和受保护文字碰撞检查。
+
+### 通栏文本轴
+
+- 在同一阅读区声明通栏主标题、副标题与说明时，以相同 `data-fullwidth-text-axis` 标记每个文字叶子。它们的 CSS 文本框必须具有相同左边界和最大右边界，交由浏览器在完整宽度内自然换行。
+- 章节号、轨道、结构线和视觉留白不得降低该轴的右边界；需要窄栏、图文并置或信息卡时，改用对应结构并不要标为通栏。实测器只检查轴边界一致性与受保护文字碰撞；是否属于真实通栏、是否有不必要空场须人工复核。
+- 首帧主视觉使用 `[data-hero-surface] > [data-hero]`：表面 bbox 必须横向到达 `x=0` 与 `x=1080`，而视觉的渐入/渐隐、母版融合和标题优先级由人工局部验收。
 
 ### 容器中的文字对齐
 
@@ -87,6 +94,7 @@ track-safe text axis x=112–968（外侧轨道 + 32px 内缩时）
 
 - 一个阅读区只承担一个已声明的 `Lxx` 信息关系。相邻阅读区不得使用相同 `Lxx`；同一 `Lxx` 整张图最多出现两次。
 - 变换颜色、翻转左右、改圆角或换一张图片，不构成新的版式。只有阅读关系、阅读顺序和结构骨架发生变化，才可视为另一种配方。
+- 相邻模块还应在图文关系、章节导航、细轨道或结构线中至少改变一项，形成连续编辑节奏。不得连续平铺“左标签 + 左标题 + 列表”；装饰不得挤占正文轴或成为无意义网格。
 - 文案中已有权益、日期、阶段、关系或真实去向等可结构化关系时，优先使用对应契约，而非以普通段落或等权卡片平铺。
 
 ## 5. 文字与图片关系
@@ -109,7 +117,7 @@ track-safe text axis x=112–968（外侧轨道 + 32px 内缩时）
 1. 裁切后存在连续、低细节的文字安静区；
 2. 安静区不含脸、手、产品关键功能或核心证据；
 3. 有足够对比，且不依赖整图大面积蒙版；
-4. 浏览器 Mobile View Check 中标题仍可直接阅读。
+4. 浏览器实测标题字号、换行、溢出与文字安静区均通过。
 
 失败时按顺序处理：移动文字、调整裁切、改图文分栏、仅为文字区域加局部遮罩、替换资产。不得用全图渐变蒙版掩盖失败。
 
@@ -130,7 +138,7 @@ track-safe text axis x=112–968（外侧轨道 + 32px 内缩时）
   "producer": "playwright-dom",
   "layout_engine": "playwright-chromium",
   "poster_sha256": "由测量器写入",
-  "contract": "yinxi-layout-manifest-v2",
+  "contract": "yinxi-layout-manifest-v3",
   "canvas": {"width": 1080, "color": "#10100F"},
   "reading_zones": [{"id": "V1", "contract": "L01"}],
   "hero": {"strategy": "imagegen", "copy_anchor_bottom": 620, "copy_group_height": 280, "visible_bbox": [112, 700, 856, 760]},
@@ -138,19 +146,20 @@ track-safe text axis x=112–968（外侧轨道 + 32px 内缩时）
   "background_samples": [{"point": [16, 16]}],
   "seams": [{"sample_points": [[16, 1900]]}],
   "cta_groups": [{"id": "signup"}],
-  "containers": [], "protected_boxes": [], "chapters": [], "portraits": []
+  "major_modules": [], "containers": [], "protected_boxes": [], "chapters": [], "portraits": []
 }
 ```
 
 | 条件对象 | 必须记录 |
 |---|---|
 | 所有案例 | `producer/layout_engine/poster_sha256`、`canvas`、阅读区 `Lxx` 序列、`background_samples` 与阅读区边界 `seams[].sample_points` 的真实 PNG 采样 |
-| 首帧 | `copy_anchor_bottom`、`copy_group_height`、主视觉实际 `visible_bbox`；不得用图片画布 bbox 代替 |
+| 首帧 | `data-hero-cover`、`copy_anchor_bottom`、`copy_group_height`、主视觉实际 `visible_bbox` 与满幅 `surface_bbox`；不得用图片画布 bbox 代替主体 bbox |
 | 渲染真源 | `poster.html`（资产与字体内嵌）、`render-proof.json`：`engine=playwright-chromium`、正式字体和图片已加载、浏览器栅格来自同一布局引擎；超长时只允许该浏览器的像素条带拼接 |
 | 换行文字 | 每个发生换行的 `title` / `module-title` / `body` 的 `rendered_lines`、实际 `font_size`；行数据从最终浏览器渲染树导出 |
 | 容器 | `id`、`rect`、`padding`、子元素 bbox / role / font_size / `rendered_lines` |
 | CTA 数据组 | `cta_groups[].id`；每个价格和 QR 子元素写同一个 `cta_group`，即使它们不在同一容器 |
-| 章节号 | bbox、`title_top`、受保护文字 bbox |
+| 通栏文字轴 | `text_axes[]` 的轴 ID、阅读区、每个成员的真实 bbox；同一轴成员的左右边界必须相同 |
+| 章节号 | bbox、`zone_id`、显示号、`label_top`、章节字号、内部索引字号、受保护文字 bbox；首帧不应有章节号 |
 | 人物 | `portrait_mode`、`intro_text_top`、关联文字区 top/bottom；`transparent` 记录 `visible_head_top` 与 `visible_bbox`，`masked/source-crop` 记录 `image_rect_top` 与 `image_rect` |
 
 先使用：`.venv/bin/python scripts/export_layout_manifest.py --input <case>/poster.html --output <case>/layout-manifest.json`；再使用：`.venv/bin/python scripts/verify-case-layout.py <case>/layout-manifest.json --poster-html <case>/poster.html --png <case>/final.png --render-proof <case>/render-proof.json`。验证失败必须回到布局；测量器无法导出真实坐标、真实 PNG 或渲染证明时，该案例不能写 `agent-checked`。具体 HTML 标记见 `text-rendering-rules.md`，不得改为手写 JSON。

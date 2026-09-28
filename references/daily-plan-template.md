@@ -1,21 +1,21 @@
 # 黑金长图日常 Plan 模板
 
-复制为案例目录内的 `plan.md`。这是一份生产记录；它先记录待确认的文案与首帧策略，确认后才记录资产和导出。
+复制为案例目录的 `plan.md`。预确认阶段只写本文件，不创建生产资产或输出。
 
-## 1. 身份、原文与事实锁定
+## 1. 输入与事实锁定
 
 ```text
 项目名称：
 案例目录：
-状态：planning / awaiting-copy-confirmation / awaiting-hero-confirmation / input-blocked / preflight-blocked / approved-for-production / rendered / checked
+状态：planning / awaiting-copy-confirmation / input-blocked / preflight-blocked / approved-for-production / rendered / checked
 审阅：not-reviewed / agent-checked / human-review-needed / human-approved
 source_copy 来源：
-current_input_allowlist（当前对话明确提供的附件、链接、路径；不含历史案例或基线）：
-fact_locks（原文中所有事实性信息：身份、时间、价格、权益、经历、成果、数字、CTA 等；默认冻结）：
+current_input_allowlist（仅当前对话提供的附件、链接、路径）：
+fact_locks：
 待确认或缺失项：
 ```
 
-| 源模块 ID | 原文角色 | 原文摘要 | 事实 / 表达 | 最终阅读区 |
+| 源模块 ID | 原文角色 | 原文摘要 | 事实/表达 | 最终阅读区 |
 |---|---|---|---|---|
 |  | `claim/context/explain/proof/benefit/action` |  | 冻结事实 / 可提炼表达 | `Vx / Lxx` |
 
@@ -24,94 +24,76 @@ fact_locks（原文中所有事实性信息：身份、时间、价格、权益�
 ```text
 Hero Message：
 Supporting Message：
+封面眉题（唯一活动/项目语境）：
+主标题的核心主张：
+副标题的新信息（不得复述眉题/主标题）：
 Proof：
 Benefits：
 CTA：
 display_copy（按阅读区）：
 display_copy 来源模块 ID 映射：
 用户确认展示文案：待确认 / 已确认 / 要求修改；日期：
-用户修改意见与本轮修订：
+确认稿素材询问：是否有希望使用的导师/嘉宾人像，以及报名二维码可一并上传？如有，请现在一并提供。
+本轮人像上传/明确无：
+本轮二维码上传/明确无：
 ```
 
-## 3. 首帧策略确认
+## 3. 素材与首帧决定
 
 ```text
-本次输入是否含导师 / 嘉宾人像：是 / 否
-若无：是否询问用户可补充首帧人像；用户答复：
-若有：是否询问用户将其用于首帧；用户答复：
-内部首帧策略：mentor-portrait / imagegen
-选择理由：
-若 mentor-portrait：人物、身份与首帧传播重点：
-若 imagegen：唯一主实体、辅助关系、文字安静区、禁止文字：
-首帧判断状态：待确认 / 已确定；日期：
-默认 ImageGen 预算 / 用户授权的额外范围：
+portrait_hero_decision：theme-imagegen / mentor-portrait-by-request
+用户明确的人像首帧要求（无则写“无”）：
+默认首帧：主题主视觉；导师/嘉宾人像用途：中段讲师信息 / 明确要求的首帧
+二维码状态：provided / explicitly-none / pending
+二维码 CTA：已直接使用 / 待提供占位；发布状态：可发布 / 不可发布待补输入
+首帧唯一主实体、辅助关系与文字安静区：
+edge_mode、顶部融合、底部融合、低亮度/低饱和度/低暖黄检查：
+首帧 `data-hero-cover`：是；首帧章节号：无；首个内容模块章节号：01
+首帧 `data-hero-surface` 满幅范围与标题—视觉间距：
+通栏文本轴 ID｜左边界｜右边界｜成员（标题/副标/说明）：
+
+## 首帧语义与金色关键词
+
+封面信息去重、主视觉融入与关键词语义准确性：`human-review-needed / human-approved`
+
+| 金色关键词 | 原文依据 |
+|---|---|
+|  | `source module ID：原文准确片段` |
 ```
 
-## 4. 放行
+## 4. 放行与连续阅读区
 
 | 顺序 | 结论 | 结果 |
 |---|---|---|
-| 输入可用性 |  | 通过 / 阻塞 |
-| 内容分析与事实锁定 |  | 通过 / 阻塞 |
-| 营销确认稿 |  | 已确认 / 待确认 |
-| 首帧人像判断 |  | 已确定 / 待确认 |
-| R 配方、阅读区与 L 契约 |  | 通过 / 阻塞 |
-| 资产与黑金系统 |  | 通过 / 阻塞 |
-| 放行 |  | `approved-for-production` / 其他状态 |
-
-阻塞项与下一步：
-
-```text
-预确认文件边界：只存在 plan.md / 是否合规：是 / 否
-未确认前未创建 assets、frames、render.html、poster.html、final.png：是 / 否
-```
-
-## 5. 连续阅读区
+| 输入与事实锁定 |  | 通过 / 阻塞 |
+| 展示文案与同轮素材收集 |  | 已确认 / 待确认 |
+| `portrait_hero_decision` 与二维码状态 |  | 已记录 / 待补 |
+| R 配方、阅读区、L 契约 |  | 通过 / 阻塞 |
+| 资产、主题与结构节奏 |  | 通过 / 阻塞 |
+| 生产放行 / 发布放行 |  | `approved-for-production` / 不可发布 |
 
 ```text
 Rxx：
 选择原因：
-连续画布：宽 1080px；高度由渲染器实测；不使用固定帧数或比例。
+连续画布：宽 1080px；高度由正式字体和浏览器实测决定。
 ```
 
-| 区域 | 读者问题 | 核心结论 | 真实关系 | 最终 Lxx / variant | 预计 / 实际高度 | 视觉关系 | 下一段衔接 |
+| 区域 | 读者问题 | 核心结论 | Lxx | 关键产出（金色，如有） | 章节导航号/眉题（V1 无号） | rhythm_change | 预计/实际高度 |
 |---|---|---|---|---|---|---|---|
 | V1 |  |  |  |  |  |  |  |
 
-相邻 `Lxx` 不重复：是 / 否；任一 `Lxx` ≤ 2 或已走合法降级：是 / 否。
+相邻 `Lxx` 不重复且相邻模块有结构节奏变化：是 / 否。
 
-## 6. 资产与人物
-
-| 资产 | 服务区域 | 路径 | 删除后失去的理解 | 主实体 / 关系映射 | 文字安全区 | 融入 / 拒绝条件 |
-|---|---|---|---|---|---|---|
-|  | `Vx/Lxx` | `approved-source/imagegen/procedural/text-render` |  |  |  |  |
-
-```text
-V1 几何：copy_anchor_bottom；copy_group_height；hero_visible_bbox；实际顶部间距；实际可见高度；hero.strategy。
-```
-
-| 人物 | 原图路径 | `portrait_mode` | 介绍锚点 | 原图/透明边缘检查 | 关联文字区 | 备注 |
-|---|---|---|---|---|---|---|
-|  |  | `transparent/masked/source-crop` | `intro_text_top` |  |  |  |
-
-```text
-transparent：可见头顶 ↔ intro_text_top ≤ 8px；在 #10100F 上确认透明边缘。
-masked / source-crop：图片矩形顶部 ↔ intro_text_top ≤ 8px；完整保留头顶、脸和下巴。
-多导师：选择 M01 单导师 / M02 双导师 / M03 三导师 / M04 人物墙；精细抠图与像素级多人关系交由后续编辑器。
-```
-
-## 7. 输出与验收
+## 5. 输出与验收
 
 ```text
 编辑源：render.html
-正式可编辑母版：poster.html
+正式母版：poster.html
 打包证明：poster-proof.json
 发布 PNG：final.png
 渲染证明：render-proof.json
-Layout Manifest：layout-manifest.json
-浏览器测量：`export_layout_manifest.py` 已执行 / 未执行；poster SHA256：
-诊断裁片（来自 final.png）：
-Mobile View Check（浏览器约 1/3 比例）：
+Layout Manifest：layout-manifest.json；poster SHA256：
+三套嵌入字体：Serif Bold / Sans Regular / Sans Medium
 完整导出次数：
 ImageGen 次数与理由：
 验收状态：

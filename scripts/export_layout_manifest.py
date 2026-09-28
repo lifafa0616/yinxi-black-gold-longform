@@ -55,6 +55,7 @@ EXPORT_SCRIPT = r"""() => {
       role: element.dataset.layoutRole,
       bbox: box(element),
       font_size: cssSize(element),
+      font_weight: number(parseFloat(style.fontWeight)),
       rendered_lines: textLines(element),
       independent_data: element.dataset.independentData === "true",
       cta_group: element.dataset.ctaGroup || null,
@@ -80,13 +81,57 @@ EXPORT_SCRIPT = r"""() => {
   const zones = Array.from(document.querySelectorAll("[data-reading-zone]")).map((zone) => ({
     id: zone.dataset.readingZone,
     contract: zone.dataset.contract || null,
+    is_hero_cover: zone.hasAttribute("data-hero-cover"),
     bbox: box(zone),
   }));
   const chapters = Array.from(document.querySelectorAll("[data-layout-chapter]")).map((chapter) => {
-    const title = chapter.querySelector("[data-chapter-title]");
-    if (!title) throw new Error("every [data-layout-chapter] requires one [data-chapter-title]");
-    return {id: chapter.dataset.layoutChapter, bbox: box(chapter), title_top: box(title)[1]};
+    const id = chapter.dataset.layoutChapter;
+    const zone = chapter.closest("[data-reading-zone]");
+    const labels = zone ? Array.from(zone.querySelectorAll("[data-chapter-label]"))
+      .filter((label) => label.dataset.chapterLabel === id) : [];
+    if (labels.length !== 1) throw new Error("every [data-layout-chapter] requires one same-ID [data-chapter-label] in its reading zone");
+    const internalIndexes = zone ? Array.from(zone.querySelectorAll("[data-internal-index]")) : [];
+    return {
+      id,
+      zone_id: zone ? zone.dataset.readingZone : null,
+      display_number: chapter.textContent.replace(/\s+/g, "").trim(),
+      bbox: box(chapter),
+      font_size: cssSize(chapter),
+      label_top: box(labels[0])[1],
+      internal_index_font_sizes: internalIndexes.map(cssSize),
+    };
   });
+  const major_modules = Array.from(document.querySelectorAll("[data-major-module]")).map((module) => {
+    const zone = module.closest("[data-reading-zone]");
+    return {
+      id: module.dataset.majorModule,
+      zone_id: zone ? zone.dataset.readingZone : null,
+      is_hero_cover: Boolean(zone && zone.hasAttribute("data-hero-cover")),
+      chapter_ids: Array.from(module.querySelectorAll("[data-layout-chapter]")).map((chapter) => chapter.dataset.layoutChapter),
+    };
+  });
+  const text_axes = Array.from(new Set(Array.from(document.querySelectorAll("[data-fullwidth-text-axis]"))
+    .map((element) => element.dataset.fullwidthTextAxis))).map((id) => {
+      const members = Array.from(document.querySelectorAll("[data-fullwidth-text-axis]")).filter(
+        (element) => element.dataset.fullwidthTextAxis === id,
+      );
+      const zones = new Set(members.map((element) => {
+        const zone = element.closest("[data-reading-zone]");
+        return zone ? zone.dataset.readingZone : null;
+      }));
+      return {
+        id,
+        zone_id: zones.size === 1 ? Array.from(zones)[0] : null,
+        members: members.map((element) => ({
+          role: element.dataset.layoutRole || null,
+          bbox: box(element),
+        })),
+      };
+    });
+  const gold_keywords = Array.from(document.querySelectorAll("[data-gold-keyword]")).map((element) => ({
+    scope: element.dataset.goldKeyword,
+    text: element.textContent.replace(/\s+/g, " ").trim(),
+  }));
   const protected_boxes = Array.from(document.querySelectorAll("[data-protected-text]")).map((element) => ({
     id: element.dataset.protectedText || null,
     bbox: box(element),
@@ -127,15 +172,20 @@ EXPORT_SCRIPT = r"""() => {
     sample_points: [samplePoint(element)],
   }));
   const heroes = Array.from(document.querySelectorAll("[data-hero]"));
+  const heroSurfaces = Array.from(document.querySelectorAll("[data-hero-surface]"));
   const copyAnchors = Array.from(document.querySelectorAll("[data-hero-copy]"));
   let hero = null;
   if (heroes.length === 1 && copyAnchors.length === 1) {
+    if (heroSurfaces.length !== 1 || !heroSurfaces[0].contains(heroes[0])) {
+      throw new Error("[data-hero] requires one containing [data-hero-surface]");
+    }
     const copyBox = box(copyAnchors[0]);
     hero = {
       strategy: heroes[0].dataset.hero,
       copy_anchor_bottom: number(copyBox[1] + copyBox[3]),
       copy_group_height: copyBox[3],
       visible_bbox: box(heroes[0]),
+      surface_bbox: box(heroSurfaces[0]),
       measured_from_dom: true,
     };
   }
@@ -146,6 +196,9 @@ EXPORT_SCRIPT = r"""() => {
     text_blocks: topLevelText,
     containers,
     reading_zones: zones,
+    major_modules,
+    text_axes,
+    gold_keywords,
     chapters,
     protected_boxes,
     portraits,
@@ -182,8 +235,14 @@ def build_manifest(input_path: Path) -> dict:
         page = browser.new_page(viewport={"width": CANVAS_WIDTH, "height": 1600}, device_scale_factor=1)
         page.goto(input_path.resolve().as_uri(), wait_until="networkidle")
         fonts_ready = page.evaluate("""async () => {
+            await Promise.all([
+                document.fonts.load('700 32px "Yinxi Noto Serif SC"'),
+                document.fonts.load('400 32px "Yinxi Noto Sans SC"'),
+                document.fonts.load('500 32px "Yinxi Noto Sans SC"'),
+            ]);
             await document.fonts.ready;
             return document.fonts.check('700 32px "Yinxi Noto Serif SC"') &&
+                document.fonts.check('400 32px "Yinxi Noto Sans SC"') &&
                 document.fonts.check('500 32px "Yinxi Noto Sans SC"');
         }""")
         if not fonts_ready:
@@ -200,7 +259,7 @@ def build_manifest(input_path: Path) -> dict:
         "producer": "playwright-dom",
         "layout_engine": "playwright-chromium",
         "poster_sha256": poster_sha256(input_path),
-        "contract": "yinxi-layout-manifest-v2",
+        "contract": "yinxi-layout-manifest-v3",
     })
     if manifest["canvas"]["width"] != CANVAS_WIDTH or manifest["canvas"]["color"] != CANVAS_COLOR:
         raise RuntimeError("poster.html must declare #longform-canvas data-canvas-color=\"#10100F\" at 1080px")

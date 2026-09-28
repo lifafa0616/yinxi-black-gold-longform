@@ -3,7 +3,7 @@
 
 The case author works in ``render.html`` with ordinary relative image paths.
 This script creates the formal ``poster.html`` delivery: every local image and
-CSS asset is converted to a data URI and the two production fonts are embedded
+CSS asset is converted to a data URI and the three production fonts are embedded
 as well.  The renderer then renders this exact file, so the editable document
 and the published PNG use one layout source.
 """
@@ -21,6 +21,7 @@ from urllib.parse import unquote, urlparse
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 FONT_FILES = (
     ("Yinxi Noto Serif SC", 700, SKILL_ROOT / "assets" / "fonts" / "NotoSerifCJKsc-Bold.otf"),
+    ("Yinxi Noto Sans SC", 400, SKILL_ROOT / "assets" / "fonts" / "NotoSansCJKsc-Regular.otf"),
     ("Yinxi Noto Sans SC", 500, SKILL_ROOT / "assets" / "fonts" / "NotoSansCJKsc-Medium.otf"),
 )
 PORTABLE_MARKER = '<meta name="yinxi-portable-poster" content="v1">'

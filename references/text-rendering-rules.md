@@ -1,100 +1,64 @@
 # 文字渲染与授权底线
 
-本文件不是字体风格规范。正文、标题、章节号和数字的具体视觉家族由各风格文件规定；这里仅规定所有风格都必须遵守的准确性、授权与替换流程。
+本文件规定文字准确性、授权、字重和浏览器实测标记；主题文件决定具体视觉家族。
 
-## 1. 真实文字与图形化文字
+## 1. 真实文字与正式字体
 
-- 正文、价格、行动信息、资源说明、日期和其他事实性文字必须以后置真实文字渲染，或按所选风格文件的“文字图形系统”从冻结原文逐块生成并核验；两种方式都必须保留可复核的原文输入。
-- 展示文字（主标题、模块标题、章节号、数据大数字）可使用授权字体精确渲染，也可由已确认文字转成 PNG / SVG / 轮廓图形后合成。
-- 图形化展示文字仍必须逐字核对；不得让文生图模型自行补写、改写或猜测关键中文、数字、价格、时间或行动信息。若风格明确采用 AI 文字图形资产，必须以冻结原文逐块生成，并对每一块完成逐字核验。
-- 正式发布物为 `final.png`，但正式可编辑母版为 `poster.html`。黑金 Skill 的字体先随 Skill 打包，再嵌入 `poster.html`，由固定 Chromium 渲染器加载；不得回退到系统字体或依赖本机绝对字体路径。
+- 正文、价格、行动、资源说明、日期和所有事实性文字必须以后置真实文字从冻结原文渲染；不得由图像模型猜写中文、数字、价格、时间或行动。
+- 正式 `poster.html` 必须内嵌 `NotoSerifCJKsc-Bold.otf`、`NotoSansCJKsc-Regular.otf` 与 `NotoSansCJKsc-Medium.otf`。系统字体不是正式交付或回退方案；替换字体须有明确商业许可，并重新检查换行、行高、网格、容器内边距和浏览器实测几何。
+- `render.html` 使用 `.longform-serif`（700）、`.longform-sans`（400）和 `.longform-sans-medium`（500）。
 
-## 2. 授权与替换
+## 2. 1080px 文字契约
 
-1. 选定风格文件中记录的开源参考家族或已获授权的等效字体；
-2. 在 `plan.md` 记录实际使用的视觉家族 / 图形资产、授权来源与替换方案；
-3. 字体不可用时，只能按所选风格文件中的字形条件选替代方案；
-4. 替换或图形化后，重新检查换行、行高、网格、容器内边距和浏览器 Mobile View Check。
-
-- “电脑内置”不是充分的授权来源。系统字体若无明确可用于商业成品的许可，不能作为唯一正式方案。
-- 开源字体必须记录项目来源与许可版本；商业字体必须记录购买许可或团队已有授权。
-- 图形化解决的是跨环境的字形一致性，不规避字体许可。
-
-## 3. 1080px 母版文字与颜色契约
-
-下列下限适用于所有承载阅读任务的真实文字；主题可以改变字体家族和具体色值，但不能降低字号或字重。纯装饰索引若不能达到下限，应删除而不是伪装为内容文字。
-
-| 文字角色 | 最低规格 | 使用规则 |
+| 角色 | 最低规格 | 字重规则 |
 |---|---|---|
-| 主标题 | 主标题 ≥ 110px | 后置精确文字；标题不因主视觉或卡片被缩小 |
-| 模块小标题 | 模块小标题 ≥ 40px / Medium | 每个模块的主要阅读入口；不得用细字承担标题 |
-| 主要正文、价格、行动事实 | 正文 ≥ 36px / Medium | 事实、资源、价格、日期和行动信息以此为最低阅读级别 |
-| 说明文字、必要标签与次级元信息 | 说明文字 ≥ 26px | 由主题决定以色级或字号 / 字重弱化；不得承载比正文更重要的信息 |
+| 主标题 | ≥110px | 展示 Bold |
+| 模块小标题、章节标签 | ≥40px | Medium 或更高 |
+| 解释性正文 | ≥36px | Regular：长解释、流程说明、讲师履历、准备事项、卡片说明 |
+| 日期、价格、行动、关键数据 | ≥36px | Medium 或更高 |
+| 说明/元信息 | ≥26px | 解释为 Regular；标签为 Medium |
 
-- 主标题、模块小标题、正文和说明的关系以信息角色决定，不以卡片大小决定。容器变窄或文案增多时，先换行、扩高、改结构或按 `M ∈ {80, 72, 64, 56, 48, 40, 32, 28}px` 重新布网；在 `M=28px` 后增加阅读区。
-- 模块小标题和正文不可用 Regular 或 Light 代替规定的 Medium；数据大数字可更高字重，但其单位和解释仍遵循正文 / 说明下限。
-- 说明与元信息的弱化优先由主题 Token 明确声明：主题可用更弱色级，也可令正文说明与元信息共用同一颜色、改由更小字号与更低字重区分。无论哪种路径，不得仅降低不透明度到影响手机端对比。
-- 对含“模块标题 + 说明文字”的信息模块：标题使用主文字色与 Bold / 明确高于正文的字重，说明使用主题规定的 `body` 色与 Medium；标题到第一段说明的间距 `G` 必须为该模块说明段间距 `P` 的 `1.5–2.0 ×`。若只有一段说明，先在 Plan 声明用于比较的标准段间距 `P`，再计算 `G`；不得让标题与说明挤成同一视觉层。
+- 容器过窄或文案过多时，依次换行、扩高、改结构或按 `M ∈ {80,72,64,56,48,40,32,28}px` 重布网；`M=28px` 后增加阅读区。不得缩小字号下限。
+- 主标题、模块标题、章节标签、日期、价格、行动和关键数据不可降为 Regular；解释性正文不得伪加粗为 Medium。
+- 正式浏览器换行中，主标题、模块标题与正文不得有单个汉字、单个英文字母或无意义符号独占一行。先按 4px 步进缩小到下限，再扩宽、重排或扩高；不得裁切或隐藏。
+- 同一阅读区采用通栏标题、副标题和说明时，全部叶子文字标记同一个 `data-fullwidth-text-axis` 值，并以相同 CSS 宽度、左边界和右边界排版。不得为了章节号、装饰或“视觉留白”预先缩窄其中任一文本框；需要真实图文分栏或信息卡时，改用相应契约而非伪装为通栏。
+- 首帧主标题的每个金色词用独立 `<span data-gold-keyword="hero-title">原文词语</span>` 标记。Plan 必须为每个标记单列原文依据；浏览器可检查标记与登记是否存在，不能判断语义是否准确，后者为 `human-review-needed`。
 
-### 孤行与单字换行
-
-- 主标题、模块标题与正文在正式字体加载后的实际换行中，不得出现“单个汉字（即使带着标点）”、单个英文字母或无意义符号独占一行。`后，`、`的。`、`A` 均视为失败；数字或单字本身就是独立数据内容时，不适用本条。
-- 一旦出现孤行，先以 `4px` 为一步缩小该文本的字号并重新测量；不得低于本文件的角色下限。标题和正文的字号下限不因容器、主视觉或版式饱满度而降低。
-- 到达字号下限仍有孤行时，依次扩大文字可用宽度（按 8px 边距梯度）、重新分配同区图文槽位、按语义短语手动平衡换行、扩展容器 / 阅读区；不得删改冻结文案、允许孤行，或以裁切、`overflow` 隐藏它。
-- 所有发生换行的 `title`、`module-title`、`body` 必须从最终浏览器渲染树导出实际 `rendered_lines`，供 Layout Manifest 检查；不能以源码预设断行代替。独立数据项若本身就是单字或单数字，必须标为 `role: data/metric` 与 `independent_data: true`，且只可有一行；此例外不能用于标题或正文孤行。
-
-## 4. 全局验收底线
+## 3. 验收底线
 
 ```text
-□ 正文、价格与行动信息逐字正确，且不是生成式伪文字
-□ 展示文字如图形化，已与原文逐字比对
-□ 若采用 AI 文字图形资产，每个资产均有对应冻结原文、生成提示与逐字核验记录
-□ 实际使用的字体 / 字形来源允许商业成品使用，并已写入 Plan
-□ 替换后重新通过版式和手机预览检查
-□ 主标题、模块小标题、正文与说明分别达到 110px / 40px / 36px / 26px 下限，且正文与模块标题为 Medium
-□ 说明 / 元信息的颜色、字号与字重关系符合所选主题，仍可在浏览器 Mobile View Check 直接阅读
-□ 发生换行的主标题、模块标题与正文无单字 / 单字符孤行；若曾发生，已按“缩小字号 → 扩宽 → 重排”的顺序解决且未突破字号下限
+□ 事实性文字逐字正确，且不是生成式伪文字
+□ 三套嵌入字体可用且许可已记录；没有系统字体依赖
+□ 主标题/模块标题/解释正文/说明分别达到 110px / 40px / 36px / 26px 下限
+□ 解释正文为 Regular；模块/章节标签、日期、价格、行动和关键数据为 Medium 或更高
+□ 金色只承担标题关键词、结论、行动、关键产出或关键事实
+□ 通栏文字共享已声明的 `data-fullwidth-text-axis` 的左、右边界；章节号未迫使文字轴提前收窄
+□ 主标题金色关键词已逐项登记原文依据；语义准确性标为人工复核
+□ 实际 `rendered_lines` 无孤行；浏览器实测无溢出、容器越界或章节碰撞
 ```
 
-## 5. 可编辑文字源与交付边界
-
-- `render.html` 是案例编辑源；`poster.html` 是正式可编辑母版。它必须内嵌图片与正式字体，用于固定文案、字体、换行、坐标与后续小范围改字。
-- 正式交付清单报告 `poster.html`、由它导出的 `1080px` `final.png` 和 `plan.md`；不交付独立 360px 缩略预览。
-- 工具记录只保存源文件路径、渲染命令、结果尺寸和检查结论；不得复制嵌入式图片 data URL、base64 或二进制内容到 Plan、日志或对话。
-
-## 6. 浏览器实测标记（黑金 Skill 必须使用）
-
-`layout-manifest.json` 不允许由 Agent 手填。制作 `render.html` 时，为承载阅读任务的元素加入下列标记；打包后由 `export_layout_manifest.py` 从 `poster.html` 的 Chromium 实际布局树读出数值。
+## 4. 浏览器实测标记
 
 ```html
 <main id="longform-canvas" data-canvas-color="#10100F">
-  <section data-reading-zone="V1" data-contract="L01">
-    <div data-hero-copy>…标题与必要副标…</div>
-    <img data-hero="imagegen" src="hero.png" alt="">
-    <i data-background-sample aria-hidden="true"></i>
+  <section data-reading-zone="V1" data-contract="L01" data-hero-cover>
+    <div data-hero-copy data-fullwidth-text-axis="V1-copy">
+      <h1 data-layout-role="title" data-fullwidth-text-axis="V1-copy">从<span data-gold-keyword="hero-title">原文关键词</span>开始</h1>
+      <p data-layout-role="body" data-fullwidth-text-axis="V1-copy">补充说明</p>
+    </div>
+    <div data-hero-surface><div data-hero="imagegen"></div></div>
   </section>
-  <i data-seam-sample="V1-V2" aria-hidden="true"></i>
-  <article data-layout-container="benefit-01">
+  <section data-reading-zone="V2" data-contract="L16" data-major-module="learning-path">
+    <p data-chapter-label="learning-path">PATH</p>
+    <span data-layout-chapter="learning-path" aria-hidden="true">02</span>
+    <span data-internal-index aria-hidden="true">01</span>
     <h2 data-layout-role="module-title">模块标题</h2>
-    <p data-layout-role="body">说明文字</p>
-  </article>
-  <section data-layout-chapter="chapter-01">
-    <h2 data-chapter-title>章节标题</h2>
+    <p data-layout-role="body">解释性说明</p>
   </section>
-  <p data-protected-text="claim-01">不得被章节压住的关键事实</p>
-  <section data-portrait="transparent">
-    <p data-portrait-intro>人物介绍</p>
-    <div data-portrait-related-text-region><img data-portrait-subject src="mentor.png" alt=""></div>
-  </section>
-  <div data-layout-role="price" data-cta-group="signup">9.9 元</div>
-  <img data-layout-role="qr" data-cta-group="signup" src="qr.png" alt="报名二维码">
 </main>
 ```
 
-- `data-hero` 只能标在实际可见的主视觉主体上，不能标在整块透明图片画布或外围包装器；取值必须是 `imagegen` 或 `mentor-portrait`。`data-hero-copy` 只包住首帧必要文字组。
-- 每个阅读区使用 `data-reading-zone` 和真实的 `data-contract="Lxx"`。每个需检查内边距的卡片/容器使用唯一 `data-layout-container`；其内文字、价格、二维码使用 `data-layout-role`。
-- `data-layout-role` 只标在实际承载文字或二维码的叶子元素上，避免父子重复标记。取值使用 `title/module-title/body/price/action/meta/data/metric/qr`；独立单字或单数字数据另加 `data-independent-data="true"`。
-- 每张图至少设置一个位于真实 `#10100F` 空白画布上的 `data-background-sample`；每个阅读区连接处设置一个位于真实空白母版上的 `data-seam-sample`。这些必须是可测的实际画面位置，而不是隐藏元素。
-- 存在章节时，章节容器使用 `data-layout-chapter`，且必须恰有一个 `data-chapter-title`；存在需要避让的事实文字时，使用 `data-protected-text`。它们由测量器分别导出章节和保护框，不能手填。
-- 存在人物时，以 `data-portrait="transparent|masked|source-crop"` 包住该人物，并恰各含一个 `data-portrait-intro`、`data-portrait-related-text-region` 和 `data-portrait-subject`；测量器据此导出人物、介绍文字与相关文字区的实际几何。
-- 测量器会读取实际换行、字号、文字框、容器框、溢出、二维码与价格的关系，并把 `poster.html` 的原始字节 SHA256 写入 Manifest。验收器会重新测量同一份 HTML，并拒绝任何与新结果不同的 Manifest；之后若改动 HTML，必须重新打包、测量、导出 PNG 和检查。
+- `data-reading-zone` 标记真实 `Lxx`；`data-layout-role` 标在承载文字或二维码的叶子元素上，取值为 `title/module-title/body/price/action/meta/date/data/metric/qr`。
+- `data-hero-cover` 只能标在第一阅读区，且不得含 `data-major-module` 或 `data-layout-chapter`。每个后续 `data-major-module` 必须恰有一个同阅读区内的 `data-layout-chapter`，并有同 ID 的 `data-chapter-label`；显示号从 `01` 连续递增。测量器导出右槽、眉题顶部、章节字号和 `data-internal-index` 的字号，以检查对齐、碰撞和“大导航号 > 内部序号”。
+- `data-fullwidth-text-axis` 标在同一通栏轴的文字叶子上；测量器检查成员是否共享浏览器实测的左右边界。为章节碰撞检查，通栏中的必要事实文字仍须标 `data-protected-text`。
+- 需要避让的事实文字标记 `data-protected-text`；容器使用 `data-layout-container`；价格与二维码用同一 `data-cta-group`。Manifest 必须由 Chromium 生成，改动 HTML 后必须重测。

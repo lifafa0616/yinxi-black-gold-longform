@@ -5,13 +5,18 @@
     <meta name="viewport" content="width=1080, initial-scale=1">
     <title>Longform render source</title>
     <style>
-      /* package_poster_html.py embeds the bundled @font-face rules into poster.html. */
+      /* package_poster_html.py embeds the bundled @font-face rules into poster.html.
+         Cover contract: V1 is [data-hero-cover] without a chapter number; its
+         [data-hero-surface] reaches both canvas sides and contains [data-hero].
+         In a full-width reading zone, title/subtitle/body leaves share one
+         data-fullwidth-text-axis value rather than narrowing for decoration. */
       :root { --canvas: #10100F; --panel: #181816; --title: #F0ECE2; --body: #94918A; --gold: #CCAA77; }
       * { box-sizing: border-box; }
       html, body { margin: 0; background: var(--canvas); }
       #longform-canvas { width: 1080px; min-height: 1920px; position: relative; overflow: hidden; background: var(--canvas); }
       .longform-serif { font-family: "Yinxi Noto Serif SC", serif; font-weight: 700; }
-      .longform-sans { font-family: "Yinxi Noto Sans SC", sans-serif; font-weight: 500; }
+      .longform-sans { font-family: "Yinxi Noto Sans SC", sans-serif; font-weight: 400; }
+      .longform-sans-medium { font-family: "Yinxi Noto Sans SC", sans-serif; font-weight: 500; }
     </style>
   </head>
   <body>

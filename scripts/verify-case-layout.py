@@ -17,7 +17,8 @@ from pathlib import Path
 from package_poster_html import validate_portable_document
 from export_layout_manifest import build_manifest
 
-ROLE_MINIMUMS = {"title": 110, "module-title": 40, "body": 36, "price": 36, "action": 36, "meta": 26}
+ROLE_MINIMUMS = {"title": 110, "module-title": 40, "body": 36, "price": 36, "action": 36, "date": 36, "data": 36, "metric": 36, "meta": 26}
+ROLE_MINIMUM_WEIGHTS = {"module-title": 500, "price": 500, "action": 500, "date": 500, "data": 500, "metric": 500}
 CANVAS_WIDTH = 1080
 CANVAS_HEX = "#10100F"
 CANVAS_RGB = (16, 16, 15)
@@ -82,6 +83,16 @@ def validate_rendered_lines(block, label, issues):
                 fail(issues, f"{label}.rendered_lines[{line_index}] is a forbidden single-character orphan line")
 
 
+def validate_font_weight(block, label, issues):
+    role, weight = block.get("role"), block.get("font_weight")
+    if not isinstance(weight, (int, float)):
+        fail(issues, f"{label} must record browser-measured font_weight")
+    elif role == "body" and weight != 400:
+        fail(issues, f"{label} explanatory body font_weight must be Regular 400")
+    elif role in ROLE_MINIMUM_WEIGHTS and weight < ROLE_MINIMUM_WEIGHTS[role]:
+        fail(issues, f"{label} {role} font_weight must be at least {ROLE_MINIMUM_WEIGHTS[role]}")
+
+
 def validate_render_proof(path, issues):
     try:
         proof = json.loads(path.read_text(encoding="utf-8"))
@@ -112,8 +123,8 @@ def validate_poster_html(path, issues):
     except (OSError, ValueError) as error:
         fail(issues, f"portable poster.html is invalid: {error}")
         return
-    if proof.get("embedded_font_count") != 2:
-        fail(issues, "portable poster.html must embed both production fonts")
+    if proof.get("embedded_font_count") != 3:
+        fail(issues, "portable poster.html must embed all three production fonts")
 
 
 def validate_manifest_provenance(manifest, poster_html_path, issues, measure_manifest=build_manifest):
@@ -228,7 +239,114 @@ def collect_cta_members(manifest, issues):
     return groups
 
 
-def validate(manifest, png_path, proof_path, poster_html_path):
+def validate_cover_and_chapter_navigation(manifest, issues):
+    zones = manifest.get("reading_zones")
+    if not isinstance(zones, list) or not zones:
+        return
+    covers = [(index, zone) for index, zone in enumerate(zones) if isinstance(zone, dict) and zone.get("is_hero_cover") is True]
+    if len(covers) != 1:
+        fail(issues, "reading_zones must contain exactly one data-hero-cover")
+        return
+    cover_index, cover = covers[0]
+    if cover_index != 0:
+        fail(issues, "data-hero-cover must be the first reading zone")
+    cover_id = cover.get("id")
+    chapters_by_id = {}
+    for index, chapter in enumerate(manifest.get("chapters", [])):
+        if not isinstance(chapter, dict):
+            continue
+        chapter_id = chapter.get("id")
+        if not isinstance(chapter_id, str) or not chapter_id:
+            fail(issues, f"chapters[{index}] requires a non-empty id")
+            continue
+        if chapter_id in chapters_by_id:
+            fail(issues, f"chapter id {chapter_id!r} is duplicated")
+        chapters_by_id[chapter_id] = chapter
+        if chapter.get("zone_id") == cover_id:
+            fail(issues, "data-hero-cover must not contain a chapter navigation number")
+    expected_number = 1
+    referenced_chapter_ids = set()
+    for index, module in enumerate(manifest.get("major_modules", [])):
+        if not isinstance(module, dict):
+            continue
+        if module.get("is_hero_cover") is True or module.get("zone_id") == cover_id:
+            fail(issues, f"major_modules[{index}] must not be the hero cover")
+            continue
+        chapter_ids = module.get("chapter_ids")
+        if not isinstance(chapter_ids, list) or len(chapter_ids) != 1:
+            fail(issues, f"major_modules[{index}] must contain exactly one chapter navigation number")
+            continue
+        chapter = chapters_by_id.get(chapter_ids[0])
+        if chapter is None:
+            fail(issues, f"major_modules[{index}] references an unmeasured chapter")
+            continue
+        referenced_chapter_ids.add(chapter_ids[0])
+        if chapter.get("display_number") != f"{expected_number:02d}":
+            fail(issues, f"chapters after data-hero-cover must be continuous 01…N; expected {expected_number:02d}")
+        expected_number += 1
+    for chapter_id, chapter in chapters_by_id.items():
+        if chapter.get("zone_id") != cover_id and chapter_id not in referenced_chapter_ids:
+            fail(issues, f"chapter {chapter_id!r} must belong to exactly one non-cover major module")
+
+
+def validate_hero_surface_and_text_axes(manifest, issues):
+    hero = manifest.get("hero")
+    if isinstance(hero, dict):
+        surface = rect(hero.get("surface_bbox"), "hero.surface_bbox", issues)
+        if surface and (surface[0] > 0.5 or surface[0] + surface[2] < CANVAS_WIDTH - 0.5):
+            fail(issues, "hero.surface_bbox must extend to both canvas sides")
+    axes = manifest.get("text_axes", [])
+    if not isinstance(axes, list):
+        fail(issues, "text_axes must be a list when present")
+        return
+    for index, axis in enumerate(axes):
+        if not isinstance(axis, dict) or not isinstance(axis.get("id"), str) or not axis["id"]:
+            fail(issues, f"text_axes[{index}] requires a non-empty declared axis id")
+            continue
+        members = axis.get("members")
+        if not isinstance(axis.get("zone_id"), str) or not axis["zone_id"] or not isinstance(members, list) or not members:
+            fail(issues, f"text_axes[{index}] requires one reading zone and at least one member")
+            continue
+        boxes = [rect(member.get("bbox") if isinstance(member, dict) else None, f"text_axes[{index}].members[{member_index}].bbox", issues)
+                 for member_index, member in enumerate(members)]
+        boxes = [box for box in boxes if box]
+        if not boxes:
+            continue
+        left, right = boxes[0][0], boxes[0][0] + boxes[0][2]
+        for member_index, box in enumerate(boxes[1:], start=1):
+            if abs(box[0] - left) > 1 or abs((box[0] + box[2]) - right) > 1:
+                fail(issues, f"text_axes[{index}].members[{member_index}] must share the declared axis left and right bounds")
+
+
+def validate_plan_gold_keyword_registration(manifest, plan_path, issues):
+    try:
+        lines = plan_path.read_text(encoding="utf-8").splitlines()
+    except OSError as error:
+        fail(issues, f"cannot read Plan for gold-keyword registration: {error}")
+        return
+    keywords = [item.get("text") for item in manifest.get("gold_keywords", [])
+                if isinstance(item, dict) and item.get("scope") == "hero-title" and isinstance(item.get("text"), str) and item["text"]]
+    if not keywords:
+        fail(issues, "Plan check requires at least one data-gold-keyword=hero-title in the manifest")
+        return
+    try:
+        start = next(index for index, line in enumerate(lines) if line.strip() == "## 首帧语义与金色关键词")
+    except StopIteration:
+        fail(issues, "Plan must contain the '首帧语义与金色关键词' registration section")
+        return
+    rows = []
+    for line in lines[start + 1:]:
+        if line.startswith("## "):
+            break
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) >= 2 and cells[0] and cells[0] != "金色关键词" and set(cells[0]) != {"-"}:
+            rows.append(cells)
+    for keyword in keywords:
+        if not any(keyword in row[0] and len(row) > 1 and row[1] and set(row[1]) != {"-"} for row in rows):
+            fail(issues, f"Plan must register hero-title gold keyword {keyword!r} with a non-empty original-source basis in its own row")
+
+
+def validate(manifest, png_path, proof_path, poster_html_path, plan_path=None):
     issues = []
     canvas = manifest.get("canvas", {})
     if canvas.get("width") != CANVAS_WIDTH:
@@ -260,6 +378,7 @@ def validate(manifest, png_path, proof_path, poster_html_path):
             required_height = max(HERO_VISIBLE_HEIGHT_MIN, 1.2 * copy_height)
             if visible[3] < required_height:
                 fail(issues, f"hero visible height must be at least {required_height:g}px")
+    validate_hero_surface_and_text_axes(manifest, issues)
 
     text_blocks = manifest.get("text_blocks")
     if not isinstance(text_blocks, list):
@@ -272,6 +391,7 @@ def validate(manifest, png_path, proof_path, poster_html_path):
             role, size = block.get("role"), block.get("font_size")
             if role in ROLE_MINIMUMS and (not isinstance(size, (int, float)) or size < ROLE_MINIMUMS[role]):
                 fail(issues, f"text_blocks[{index}] {role} font_size must be at least {ROLE_MINIMUMS[role]}")
+            validate_font_weight(block, f"text_blocks[{index}]", issues)
             validate_rendered_lines(block, f"text_blocks[{index}]", issues)
             if block.get("overflow_x") is True or block.get("overflow_y") is True:
                 fail(issues, f"text_blocks[{index}] has browser-measured overflow")
@@ -314,6 +434,7 @@ def validate(manifest, png_path, proof_path, poster_html_path):
             role, size = child.get("role"), child.get("font_size")
             if role in ROLE_MINIMUMS and (not isinstance(size, (int, float)) or size < ROLE_MINIMUMS[role]):
                 fail(issues, f"containers[{index}].children[{child_index}] {role} font_size must be at least {ROLE_MINIMUMS[role]}")
+            validate_font_weight(child, f"containers[{index}].children[{child_index}]", issues)
             validate_rendered_lines(child, f"containers[{index}].children[{child_index}]", issues)
             if child.get("overflow_x") is True or child.get("overflow_y") is True:
                 fail(issues, f"containers[{index}].children[{child_index}] has browser-measured overflow")
@@ -344,18 +465,27 @@ def validate(manifest, png_path, proof_path, poster_html_path):
         value = rect(box.get("bbox") if isinstance(box, dict) else None, f"protected_boxes[{index}].bbox", issues)
         if value:
             protected.append(value)
+    validate_cover_and_chapter_navigation(manifest, issues)
+
     for index, chapter in enumerate(manifest.get("chapters", [])):
         if not isinstance(chapter, dict):
             fail(issues, f"chapters[{index}] must be an object")
             continue
-        box, title_top = rect(chapter.get("bbox"), f"chapters[{index}].bbox", issues), chapter.get("title_top")
-        if not box or not isinstance(title_top, (int, float)):
-            fail(issues, f"chapters[{index}] requires bbox and numeric title_top")
+        box, label_top, chapter_font_size = (
+            rect(chapter.get("bbox"), f"chapters[{index}].bbox", issues),
+            chapter.get("label_top"),
+            chapter.get("font_size"),
+        )
+        if not box or not isinstance(label_top, (int, float)) or not isinstance(chapter_font_size, (int, float)):
+            fail(issues, f"chapters[{index}] requires bbox, numeric label_top and numeric font_size")
             continue
         if abs((CANVAS_WIDTH - (box[0] + box[2])) - 92) > 8:
             fail(issues, f"chapters[{index}] right gap must be 92px ±8px")
-        if abs(box[1] - title_top) > 8:
-            fail(issues, f"chapters[{index}] top must align to title_top within ±8px")
+        if abs(box[1] - label_top) > 8:
+            fail(issues, f"chapters[{index}] top must align to label_top within ±8px")
+        for internal_index, internal_font_size in enumerate(chapter.get("internal_index_font_sizes", [])):
+            if not isinstance(internal_font_size, (int, float)) or chapter_font_size <= internal_font_size:
+                fail(issues, f"chapters[{index}] must be larger than internal_index_font_sizes[{internal_index}]")
         for protected_index, protected_box in enumerate(protected):
             if box[0] < protected_box[0] + protected_box[2] and box[0] + box[2] > protected_box[0] and box[1] < protected_box[1] + protected_box[3] and box[1] + box[3] > protected_box[1]:
                 fail(issues, f"chapters[{index}] overlaps protected_boxes[{protected_index}]")
@@ -386,6 +516,8 @@ def validate(manifest, png_path, proof_path, poster_html_path):
             fail(issues, f"portraits[{index}] {label} must align to intro_text_top within ±8px")
         if subject[1] < top or subject[1] + subject[3] > bottom:
             fail(issues, f"portraits[{index}] {mode} bbox exceeds its related text region")
+    if plan_path is not None:
+        validate_plan_gold_keyword_registration(manifest, plan_path, issues)
     return issues
 
 
@@ -395,13 +527,14 @@ def main():
     parser.add_argument("--png", required=True, type=Path, help="final PNG from render_longform.py")
     parser.add_argument("--render-proof", required=True, type=Path, help="renderer-produced render-proof.json")
     parser.add_argument("--poster-html", required=True, type=Path, help="formal self-contained poster.html")
+    parser.add_argument("--plan", type=Path, help="plan.md; checks structured hero-title gold-keyword registration when supplied")
     args = parser.parse_args()
     try:
         manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         print(f"cannot read manifest: {error}", file=sys.stderr)
         return 2
-    issues = validate(manifest, args.png, args.render_proof, args.poster_html)
+    issues = validate(manifest, args.png, args.render_proof, args.poster_html, args.plan)
     if issues:
         for issue in issues:
             print(f"invalid: {issue}", file=sys.stderr)

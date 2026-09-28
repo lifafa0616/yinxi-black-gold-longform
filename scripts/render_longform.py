@@ -85,11 +85,13 @@ def main():
         fonts_ready = page.evaluate("""async () => {
             await Promise.all([
                 document.fonts.load('700 32px "Yinxi Noto Serif SC"'),
+                document.fonts.load('400 32px "Yinxi Noto Sans SC"'),
                 document.fonts.load('500 32px "Yinxi Noto Sans SC"'),
             ]);
             await document.fonts.ready;
             return document.fonts.status === 'loaded' &&
                 document.fonts.check('700 32px "Yinxi Noto Serif SC"') &&
+                document.fonts.check('400 32px "Yinxi Noto Sans SC"') &&
                 document.fonts.check('500 32px "Yinxi Noto Sans SC"');
         }""")
         canvas = page.locator("#longform-canvas")
@@ -123,7 +125,7 @@ def main():
         proof = {
             "engine": "playwright-chromium",
             "fonts_ready": True,
-            "fonts": ["Yinxi Noto Serif SC", "Yinxi Noto Sans SC"],
+            "fonts": ["Yinxi Noto Serif SC 700", "Yinxi Noto Sans SC 400", "Yinxi Noto Sans SC 500"],
             "canvas_width": round(bbox["width"], 2),
             "browser_raster_from_layout_engine": True,
             "png_direct_from_layout_engine": capture_mode == "direct",

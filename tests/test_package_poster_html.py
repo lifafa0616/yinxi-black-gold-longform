@@ -25,6 +25,8 @@ class PackagePosterHtmlTests(unittest.TestCase):
             self.assertIn(PACKAGE.PORTABLE_MARKER, html)
             self.assertIn("data:image/png;base64,", html)
             self.assertIn("data:font/otf;base64,", html)
+            self.assertEqual(proof["embedded_font_count"], 3)
+            self.assertIn('font-weight: 400', html)
             self.assertEqual(proof["embedded_local_asset_count"], 2)
             self.assertTrue(proof["portable_html"])
 
