@@ -2,10 +2,6 @@
 
 面向课程、活动、研究、权益与专业内容的中文黑金手机长图 Skill。它把长文案和真实素材先转成待确认的营销方案，再生成一份可编辑、自包含的 HTML 海报母版，并由同一浏览器导出正式 PNG。
 
-<p align="center">
-  <img src="examples/black-gold-hero-approved.png" width="310" alt="黑金首帧主视觉案例">
-</p>
-
 ## 案例
 
 <p align="center">
