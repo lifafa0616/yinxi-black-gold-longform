@@ -58,6 +58,8 @@
 </main>
 ```
 
+人像首帧在同一 `data-hero-surface` 内使用 `data-hero="portrait-ensemble"` 与 `data-portrait-recipe="P01|P02|P03|P04"`。每位人物标记 `data-hero-subject`、`data-depth`、`data-hero-head`、`data-hero-face`、`data-hero-shoulder-visible` 和说明组；P04 竖排说明中的 `AI`、`12`、`B端` 等不可拆词使用单一 `[data-no-split-token]` 节点，并在 caption 的 `data-required-protected-tokens` 中声明。
+
 - `data-reading-zone` 标记真实 `Lxx`；`data-layout-role` 标在承载文字或二维码的叶子元素上，取值为 `title/module-title/body/price/action/meta/date/data/metric/qr`。
 - `data-hero-cover` 只能标在第一阅读区，且不得含 `data-major-module` 或 `data-layout-chapter`。每个后续 `data-major-module` 必须恰有一个同阅读区内的 `data-layout-chapter`，并有同 ID 的 `data-chapter-label`；显示号从 `01` 连续递增。测量器导出右槽、眉题顶部、章节字号和 `data-internal-index` 的字号，以检查对齐、碰撞和“大导航号 > 内部序号”。
 - `data-fullwidth-text-axis` 标在同一通栏轴的文字叶子上；测量器检查成员是否共享浏览器实测的左右边界。为章节碰撞检查，通栏中的必要事实文字仍须标 `data-protected-text`。

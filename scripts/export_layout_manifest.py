@@ -21,6 +21,7 @@ CANVAS_COLOR = "#10100F"
 
 
 EXPORT_SCRIPT = r"""() => {
+  const CANVAS_WIDTH = 1080;
   const number = (value) => Math.round(value * 100) / 100;
   const box = (element) => {
     const rect = element.getBoundingClientRect();
@@ -180,14 +181,83 @@ EXPORT_SCRIPT = r"""() => {
       throw new Error("[data-hero] requires one containing [data-hero-surface]");
     }
     const copyBox = box(copyAnchors[0]);
+    const title = copyAnchors[0].querySelector('[data-layout-role="title"]');
     hero = {
       strategy: heroes[0].dataset.hero,
+      recipe_id: heroes[0].dataset.portraitRecipe || null,
+      title_bbox: title ? box(title) : null,
       copy_anchor_bottom: number(copyBox[1] + copyBox[3]),
       copy_group_height: copyBox[3],
       visible_bbox: box(heroes[0]),
       surface_bbox: box(heroSurfaces[0]),
       measured_from_dom: true,
     };
+    if (heroes[0].dataset.hero === "portrait-ensemble") {
+      const subjects = Array.from(heroes[0].querySelectorAll("[data-hero-subject]"));
+      const required = (subject, selector, label) => {
+        const matches = subject.querySelectorAll(selector);
+        if (matches.length !== 1) throw new Error(`${label} requires exactly one ${selector}`);
+        return matches[0];
+      };
+      hero.group = {
+        visible_bbox: box(heroes[0]),
+        center_offset_x: number((box(heroes[0])[0] + box(heroes[0])[2] / 2) - CANVAS_WIDTH / 2),
+        depth_order: subjects.slice().sort((a, b) => Number(a.dataset.zIndex) - Number(b.dataset.zIndex))
+          .map((subject) => subject.dataset.heroSubject),
+      };
+      hero.subjects = subjects.map((subject) => {
+        const head = required(subject, "[data-hero-head-box]", "hero subject");
+        const face = subject.querySelector("[data-hero-face-box]");
+        const eye = required(subject, "[data-hero-eye-line]", "hero subject");
+        const shoulder = required(subject, "[data-hero-shoulder-below]", "hero subject");
+        const shoulderVisible = required(subject, "[data-hero-shoulder-visible]", "hero subject");
+        const visible = required(subject, "[data-hero-visible]", "hero subject");
+        const body = required(subject, "[data-hero-body-visible]", "hero subject");
+        const caption = required(subject, "[data-hero-subject-caption]", "hero subject");
+        const labelElement = required(subject, "[data-hero-subject-label]", "hero subject");
+        const roleElement = required(subject, "[data-hero-subject-role]", "hero subject");
+        return {
+          id: subject.dataset.heroSubject,
+          depth: subject.dataset.depth || null,
+          asset_sha256: subject.dataset.assetSha256 || null,
+          asset_qa: subject.dataset.assetQa || null,
+          head_bbox: box(head),
+          face_bbox: face ? box(face) : box(head),
+          eye_line_y: box(eye)[1],
+          shoulder_below_y: box(shoulder)[1],
+          shoulder_bbox: box(shoulderVisible),
+          visible_bbox: box(visible),
+          body_visible_bbox: box(body),
+          caption_bbox: box(caption),
+          label_bbox: box(labelElement),
+          role_bbox: box(roleElement),
+          caption_alignment: caption.dataset.captionAlignment || null,
+          caption_orientation: caption.dataset.captionOrientation || null,
+          required_protected_tokens: (caption.dataset.requiredProtectedTokens || "")
+            .split("|").map((token) => token.trim()).filter(Boolean),
+          protected_tokens: Array.from(caption.querySelectorAll("[data-no-split-token]"))
+            .map((token) => token.textContent.replace(/\s+/g, " ").trim()).filter(Boolean),
+          z_index: Number(subject.dataset.zIndex),
+          silhouette_cut_mode: subject.dataset.silhouetteCutMode || null,
+          lower_fade_start_y: Number(subject.dataset.lowerFadeStartY),
+          lower_fade_transition_px: Number(subject.dataset.lowerFadeTransitionPx),
+        };
+      });
+      hero.pairwise_overlap = [];
+      for (let left = 0; left < hero.subjects.length; left += 1) {
+        for (let right = left + 1; right < hero.subjects.length; right += 1) {
+          const a = hero.subjects[left], b = hero.subjects[right];
+          const intersection = (first, second) => Math.max(0, Math.min(first[0] + first[2], second[0] + second[2]) - Math.max(first[0], second[0])) * Math.max(0, Math.min(first[1] + first[3], second[1] + second[3]) - Math.max(first[1], second[1]));
+          const smallerBody = Math.min(a.body_visible_bbox[2] * a.body_visible_bbox[3], b.body_visible_bbox[2] * b.body_visible_bbox[3]);
+          hero.pairwise_overlap.push({
+            a: a.id, b: b.id,
+            head_intersection: intersection(a.head_bbox, b.head_bbox),
+            face_intersection: intersection(a.face_bbox, b.face_bbox),
+            body_overlap_ratio: smallerBody ? number(intersection(a.body_visible_bbox, b.body_visible_bbox) / smallerBody) : 1,
+          });
+        }
+      }
+    }
   }
   const ctaIds = new Set(roleElements.map((element) => element.dataset.ctaGroup).filter(Boolean));
   return {
@@ -259,7 +329,7 @@ def build_manifest(input_path: Path) -> dict:
         "producer": "playwright-dom",
         "layout_engine": "playwright-chromium",
         "poster_sha256": poster_sha256(input_path),
-        "contract": "yinxi-layout-manifest-v3",
+        "contract": "yinxi-layout-manifest-v4",
     })
     if manifest["canvas"]["width"] != CANVAS_WIDTH or manifest["canvas"]["color"] != CANVAS_COLOR:
         raise RuntimeError("poster.html must declare #longform-canvas data-canvas-color=\"#10100F\" at 1080px")

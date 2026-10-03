@@ -30,6 +30,7 @@ for file in \
   references/layout-recipes.md \
   references/layout-contracts.md \
   references/layout-rules.md \
+  references/portrait-first-frame-contract.md \
   references/text-rendering-rules.md \
   references/daily-self-check.md \
   references/black-gold-system.md \
@@ -70,6 +71,11 @@ require_text references/layout-rules.md "data-hero-cover"
 require_text references/daily-plan-template.md "首帧语义与金色关键词"
 require_text references/layout-rules.md "浏览器实测 Layout Manifest"
 require_text references/layout-contracts.md "同类内容过量时的合法处理"
+require_text SKILL.md "portrait-first-frame-contract.md"
+require_text references/portrait-first-frame-contract.md 'data-hero="portrait-ensemble"'
+require_text references/portrait-first-frame-contract.md "yinxi-layout-manifest-v4"
+require_text references/daily-plan-template.md "portrait_recipe：P01 / P02 / P03 / P04"
+require_text references/daily-self-check.md "人像首帧 P01–P04"
 
 personal_root='/'"Users/"
 if find "$ROOT" -type f ! -path "$ROOT/.git/*" ! -path "$ROOT/.venv/*" ! -path "$ROOT/cases/*" ! -path '*/__pycache__/*' -exec grep -n -F "$personal_root" {} \; | grep -q .; then

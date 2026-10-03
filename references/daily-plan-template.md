@@ -44,6 +44,11 @@ display_copy 来源模块 ID 映射：
 portrait_hero_decision：theme-imagegen / mentor-portrait-by-request
 用户明确的人像首帧要求（无则写“无”）：
 默认首帧：主题主视觉；导师/嘉宾人像用途：中段讲师信息 / 明确要求的首帧
+portrait_recipe：P01 / P02 / P03 / P04 / 不适用
+人物关系与人数：单人焦点 / 双人等权 / 三人中心在前 / 四人两层分组；人数：
+透明资产与 QA：source_sha256｜alpha_sha256｜模型/版本｜双底色边缘检查｜状态
+人物映射：subject id｜depth｜head/face/shoulder/body bbox｜caption 对齐/方向｜保护 token
+人物组边界、中心误差、头部尺度差、身体交叠与下缘渐隐：
 二维码状态：provided / explicitly-none / pending
 二维码 CTA：已直接使用 / 待提供占位；发布状态：可发布 / 不可发布待补输入
 首帧唯一主实体、辅助关系与文字安静区：

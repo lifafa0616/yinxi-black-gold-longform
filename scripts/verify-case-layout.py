@@ -26,6 +26,11 @@ PIXEL_TOLERANCE = 2
 HERO_TOP_GAP_MIN = 64
 HERO_TOP_GAP_MAX = 144
 HERO_VISIBLE_HEIGHT_MIN = 560
+PORTRAIT_CONTENT_LEFT = 112
+PORTRAIT_CONTENT_RIGHT = 968
+PORTRAIT_BOUND_TOLERANCE = 0.5
+PORTRAIT_LABEL_GAP_MIN = 16
+PORTRAIT_LABEL_GAP_MAX = 48
 WRAP_ROLES = {"title", "module-title", "body"}
 INDEPENDENT_DATA_ROLES = {"data", "metric"}
 
@@ -56,6 +61,14 @@ def inside(child, parent, padding):
     x, y, width, height = child
     px, py, pwidth, pheight = parent
     return x >= px + padding and y >= py + padding and x + width <= px + pwidth - padding and y + height <= py + pheight - padding
+
+
+def inside_with_tolerance(child, parent, tolerance=PORTRAIT_BOUND_TOLERANCE):
+    x, y, width, height = child
+    px, py, pwidth, pheight = parent
+    return (x >= px - tolerance and y >= py - tolerance and
+            x + width <= px + pwidth + tolerance and
+            y + height <= py + pheight + tolerance)
 
 
 def semantic_char_count(line):
@@ -346,7 +359,381 @@ def validate_plan_gold_keyword_registration(manifest, plan_path, issues):
             fail(issues, f"Plan must register hero-title gold keyword {keyword!r} with a non-empty original-source basis in its own row")
 
 
-def validate(manifest, png_path, proof_path, poster_html_path, plan_path=None):
+def _validate_portrait_ensemble_legacy(hero, issues):
+    """Validate the measurable L01-P01 relationships for one portrait group."""
+    group = hero.get("group")
+    subjects = hero.get("subjects")
+    if not isinstance(group, dict) or not isinstance(subjects, list) or not 2 <= len(subjects) <= 4:
+        fail(issues, "portrait-ensemble requires a group and 2–4 subjects")
+        return
+    group_box = rect(group.get("visible_bbox"), "hero.group.visible_bbox", issues)
+    offset = group.get("center_offset_x")
+    depth_order = group.get("depth_order")
+    if not isinstance(offset, (int, float)) or abs(offset) > 24:
+        fail(issues, "portrait-ensemble group must be centered within 24px")
+    if group_box and (group_box[0] < PORTRAIT_CONTENT_LEFT or group_box[0] + group_box[2] > PORTRAIT_CONTENT_RIGHT):
+        fail(issues, "portrait-ensemble group must remain inside the portrait content bounds")
+    if group_box and group_box[3] > group_box[2]:
+        fail(issues, "portrait-ensemble group must present a landscape rectangular silhouette")
+    if not isinstance(depth_order, list) or len(set(depth_order)) < 2:
+        fail(issues, "portrait-ensemble requires at least two depth levels")
+    records = []
+    for index, subject in enumerate(subjects):
+        label = f"hero.subjects[{index}]"
+        if not isinstance(subject, dict) or not isinstance(subject.get("id"), str) or not subject["id"]:
+            fail(issues, f"{label} requires a non-empty id")
+            continue
+        if subject.get("asset_qa") != "passed":
+            fail(issues, f"{label} asset_qa must be passed")
+        head = rect(subject.get("head_bbox"), f"{label}.head_bbox", issues)
+        visible = rect(subject.get("visible_bbox"), f"{label}.visible_bbox", issues)
+        body = rect(subject.get("body_visible_bbox"), f"{label}.body_visible_bbox", issues)
+        caption = rect(subject.get("caption_bbox"), f"{label}.caption_bbox", issues)
+        eye, shoulder, z_index = subject.get("eye_line_y"), subject.get("shoulder_below_y"), subject.get("z_index")
+        cut_mode = subject.get("silhouette_cut_mode")
+        fade_start, fade_transition = subject.get("lower_fade_start_y"), subject.get("lower_fade_transition_px")
+        if cut_mode != "lower-fade-only":
+            fail(issues, f"{label}.silhouette_cut_mode must be lower-fade-only")
+        if not isinstance(fade_start, (int, float)) or not isinstance(shoulder, (int, float)) or fade_start < shoulder:
+            fail(issues, f"{label}.lower_fade_start_y must not precede shoulder_below_y")
+        if not isinstance(fade_transition, (int, float)) or fade_transition < 240:
+            fail(issues, f"{label}.lower_fade_transition_px must be at least 240px")
+        if not all((head, visible, body, caption)) or not isinstance(eye, (int, float)) or not isinstance(shoulder, (int, float)) or not isinstance(z_index, (int, float)):
+            continue
+        label_gap = caption[1] - (visible[1] + visible[3])
+        if label_gap < PORTRAIT_LABEL_GAP_MIN or label_gap > PORTRAIT_LABEL_GAP_MAX:
+            fail(issues, f"{label}.caption_bbox must begin 16–48px below its visible portrait")
+        horizontal_gap = max(head[0] - (caption[0] + caption[2]), caption[0] - (head[0] + head[2]), 0)
+        if horizontal_gap > head[2] * 0.5:
+            fail(issues, f"{label}.caption_bbox is not spatially bound to its head")
+        if body[1] < shoulder:
+            fail(issues, f"{label}.body_visible_bbox must begin at shoulder_below_y")
+        records.append((subject["id"], head, visible, body, eye, shoulder, z_index))
+    if len(records) != len(subjects):
+        return
+    head_heights = [item[1][3] for item in records]
+    if min(head_heights) <= 0 or max(head_heights) / min(head_heights) > 1.03:
+        fail(issues, "portrait-ensemble head heights must align within 3%")
+    eyes = [item[4] for item in records]
+    if max(eyes) - min(eyes) > min(head_heights) * 0.08:
+        fail(issues, "portrait-ensemble eye lines must align within 8% of head height")
+    exposure_heights = [visible[1] + visible[3] - head[1] for _, head, visible, *_ in records]
+    if min(exposure_heights) <= 0 or max(exposure_heights) / min(exposure_heights) > 1.05:
+        fail(issues, "portrait-ensemble visible exposure must align within 5%")
+    if len({item[6] for item in records}) < 2:
+        fail(issues, "portrait-ensemble subjects must use different z_index values")
+    if len(records) >= 3:
+        central = min(records, key=lambda item: abs(item[1][0] + item[1][2] / 2 - CANVAS_WIDTH / 2))
+        if central[6] != max(item[6] for item in records):
+            fail(issues, "portrait-ensemble central subject must occupy the foremost z_index")
+    subject_ids = {item[0] for item in records}
+    pairs = hero.get("pairwise_overlap")
+    if not isinstance(pairs, list) or len(pairs) != len(records) * (len(records) - 1) // 2:
+        fail(issues, "portrait-ensemble requires one overlap record for every subject pair")
+        return
+    for index, pair in enumerate(pairs):
+        label = f"hero.pairwise_overlap[{index}]"
+        if not isinstance(pair, dict) or pair.get("a") not in subject_ids or pair.get("b") not in subject_ids or pair.get("a") == pair.get("b"):
+            fail(issues, f"{label} must name two subjects")
+            continue
+        head_intersection, body_overlap = pair.get("head_intersection"), pair.get("body_overlap_ratio")
+        if not isinstance(head_intersection, (int, float)) or head_intersection != 0:
+            fail(issues, f"{label}.head_intersection must be 0")
+        if not isinstance(body_overlap, (int, float)) or body_overlap < 0 or body_overlap > 1 / 3:
+            fail(issues, f"{label}.body_overlap_ratio must be 0–1/3")
+
+
+def _validate_portrait_recipe_common(hero, recipe_id, subjects, issues):
+    group = hero.get("group")
+    if not isinstance(group, dict):
+        fail(issues, f"portrait recipe {recipe_id} requires a measured group")
+        return None
+    group_box = rect(group.get("visible_bbox"), "hero.group.visible_bbox", issues)
+    offset = group.get("center_offset_x")
+    if not isinstance(offset, (int, float)) or abs(offset) > 24:
+        fail(issues, f"portrait recipe {recipe_id} group must be centered within 24px")
+    if group_box and (group_box[0] < PORTRAIT_CONTENT_LEFT or group_box[0] + group_box[2] > PORTRAIT_CONTENT_RIGHT):
+        fail(issues, f"portrait recipe {recipe_id} group must remain inside the portrait content bounds")
+    if recipe_id != "P02" and group_box and group_box[3] > group_box[2]:
+        fail(issues, f"portrait recipe {recipe_id} group must present a landscape rectangular silhouette")
+
+    records = []
+    for index, subject in enumerate(subjects):
+        label = f"hero.subjects[{index}]"
+        if not isinstance(subject, dict) or not isinstance(subject.get("id"), str) or not subject["id"]:
+            fail(issues, f"{label} requires a non-empty id")
+            continue
+        if subject.get("asset_qa") != "passed":
+            fail(issues, f"{label} asset_qa must be passed")
+        head = rect(subject.get("head_bbox"), f"{label}.head_bbox", issues)
+        shoulder_box = rect(subject.get("shoulder_bbox"), f"{label}.shoulder_bbox", issues)
+        visible = rect(subject.get("visible_bbox"), f"{label}.visible_bbox", issues)
+        body = rect(subject.get("body_visible_bbox"), f"{label}.body_visible_bbox", issues)
+        caption = rect(subject.get("caption_bbox"), f"{label}.caption_bbox", issues)
+        label_box = rect(subject.get("label_bbox"), f"{label}.label_bbox", issues)
+        role_box = rect(subject.get("role_bbox"), f"{label}.role_bbox", issues)
+        eye = subject.get("eye_line_y")
+        shoulder = subject.get("shoulder_below_y")
+        z_index = subject.get("z_index")
+        cut_mode = subject.get("silhouette_cut_mode")
+        fade_start = subject.get("lower_fade_start_y")
+        fade_transition = subject.get("lower_fade_transition_px")
+        if cut_mode != "lower-fade-only":
+            fail(issues, f"{label}.silhouette_cut_mode must be lower-fade-only")
+        if not isinstance(fade_start, (int, float)) or not isinstance(shoulder, (int, float)) or fade_start < shoulder:
+            fail(issues, f"{label}.lower_fade_start_y must not precede shoulder_below_y")
+        if not isinstance(fade_transition, (int, float)) or fade_transition < 240:
+            fail(issues, f"{label}.lower_fade_transition_px must be at least 240px")
+        if not all((head, shoulder_box, visible, body, caption, label_box, role_box)):
+            continue
+        if not isinstance(eye, (int, float)) or not isinstance(shoulder, (int, float)) or not isinstance(z_index, (int, float)):
+            continue
+        if body[1] < shoulder:
+            fail(issues, f"{label}.body_visible_bbox must begin at shoulder_below_y")
+        if (visible[0] < PORTRAIT_CONTENT_LEFT - PORTRAIT_BOUND_TOLERANCE or
+                visible[0] + visible[2] > PORTRAIT_CONTENT_RIGHT + PORTRAIT_BOUND_TOLERANCE):
+            fail(issues, f"{label}.visible_bbox must remain inside the portrait content bounds")
+        if not inside_with_tolerance(shoulder_box, visible):
+            fail(issues, f"{label}.shoulder_bbox must stay inside visible_bbox")
+        if not inside_with_tolerance(body, visible):
+            fail(issues, f"{label}.body_visible_bbox must stay inside visible_bbox")
+        if not inside_with_tolerance(label_box, caption):
+            fail(issues, f"{label}.label_bbox must stay inside caption_bbox")
+        if not inside_with_tolerance(role_box, caption):
+            fail(issues, f"{label}.role_bbox must stay inside caption_bbox")
+        if (caption[0] < PORTRAIT_CONTENT_LEFT - PORTRAIT_BOUND_TOLERANCE or
+                caption[0] + caption[2] > PORTRAIT_CONTENT_RIGHT + PORTRAIT_BOUND_TOLERANCE):
+            fail(issues, f"{label}.caption_bbox must remain inside the portrait content bounds")
+        records.append({
+            "id": subject["id"],
+            "depth": subject.get("depth"),
+            "head": head,
+            "shoulder_box": shoulder_box,
+            "visible": visible,
+            "body": body,
+            "caption": caption,
+            "label": label_box,
+            "role": role_box,
+            "eye": eye,
+            "shoulder": shoulder,
+            "z_index": z_index,
+            "caption_alignment": subject.get("caption_alignment"),
+            "caption_orientation": subject.get("caption_orientation"),
+            "required_protected_tokens": subject.get("required_protected_tokens"),
+            "protected_tokens": subject.get("protected_tokens"),
+        })
+    if len(records) != len(subjects):
+        return None
+
+    subject_ids = {record["id"] for record in records}
+    pairs = hero.get("pairwise_overlap")
+    expected_pair_count = len(records) * (len(records) - 1) // 2
+    if not isinstance(pairs, list) or len(pairs) != expected_pair_count:
+        fail(issues, f"portrait recipe {recipe_id} requires one overlap record for every subject pair")
+    else:
+        for index, pair in enumerate(pairs):
+            label = f"hero.pairwise_overlap[{index}]"
+            if not isinstance(pair, dict) or pair.get("a") not in subject_ids or pair.get("b") not in subject_ids or pair.get("a") == pair.get("b"):
+                fail(issues, f"{label} must name two subjects")
+                continue
+            head_intersection = pair.get("head_intersection")
+            face_intersection = pair.get("face_intersection")
+            body_overlap = pair.get("body_overlap_ratio")
+            if recipe_id == "P04":
+                if not isinstance(face_intersection, (int, float)) or face_intersection != 0:
+                    fail(issues, f"{label}.face_intersection must be 0 for portrait recipe P04")
+            elif not isinstance(head_intersection, (int, float)) or head_intersection != 0:
+                fail(issues, f"{label}.head_intersection must be 0")
+            if not isinstance(body_overlap, (int, float)) or body_overlap < 0 or body_overlap > 1 / 3:
+                fail(issues, f"{label}.body_overlap_ratio must be 0–1/3")
+    return group_box, records
+
+
+def _validate_equal_head_scale(recipe_id, records, issues, tolerance_ratio=0.03, minimum_px=0):
+    if len(records) < 2:
+        return
+    heights = [record["head"][3] for record in records]
+    if min(heights) <= 0 or max(heights) - min(heights) > max(minimum_px, min(heights) * tolerance_ratio):
+        tolerance = f"max({tolerance_ratio:.0%}, {minimum_px}px)" if minimum_px else f"{tolerance_ratio:.0%}"
+        fail(issues, f"portrait recipe {recipe_id} head heights must align within {tolerance}")
+
+
+def _validate_below_portrait_captions(recipe_id, records, issues):
+    alignments = {record["caption_alignment"] for record in records}
+    orientations = {record["caption_orientation"] for record in records}
+    if len(alignments) != 1:
+        fail(issues, f"portrait recipe {recipe_id} captions must use one shared alignment")
+    if orientations != {"horizontal"}:
+        fail(issues, f"portrait recipe {recipe_id} captions must be horizontal")
+    caption_tops = [record["caption"][1] for record in records]
+    if max(caption_tops) - min(caption_tops) > 4:
+        fail(issues, f"portrait recipe {recipe_id} caption tops must align within 4px")
+    for index, record in enumerate(records):
+        gap = record["caption"][1] - (record["visible"][1] + record["visible"][3])
+        if gap < PORTRAIT_LABEL_GAP_MIN or gap > PORTRAIT_LABEL_GAP_MAX:
+            fail(issues, f"hero.subjects[{index}].caption_bbox must begin 16–48px below its visible portrait")
+
+
+def _validate_recipe_p01(records, issues):
+    _validate_equal_head_scale("P01", records, issues)
+    _validate_below_portrait_captions("P01", records, issues)
+    eyes = [record["eye"] for record in records]
+    head_height = min(record["head"][3] for record in records)
+    if max(eyes) - min(eyes) > head_height * 0.08:
+        fail(issues, "portrait recipe P01 eye lines must align within 8% of head height")
+    exposures = [record["visible"][1] + record["visible"][3] - record["head"][1] for record in records]
+    if min(exposures) <= 0 or max(exposures) / min(exposures) > 1.05:
+        fail(issues, "portrait recipe P01 visible exposure must align within 5%")
+    central = min(records, key=lambda record: abs(record["head"][0] + record["head"][2] / 2 - CANVAS_WIDTH / 2))
+    if central["z_index"] != max(record["z_index"] for record in records):
+        fail(issues, "portrait recipe P01 central subject must occupy the foremost z_index")
+    if central["depth"] != "foreground" or any(record["depth"] != "background" for record in records if record is not central):
+        fail(issues, "portrait recipe P01 requires the central subject foreground and side subjects background")
+
+
+def _validate_recipe_p02(hero, records, issues):
+    record = records[0]
+    if record["depth"] != "foreground":
+        fail(issues, "portrait recipe P02 subject depth must be foreground")
+    if record["caption_orientation"] != "horizontal":
+        fail(issues, "portrait recipe P02 caption must be horizontal")
+    head = record["head"]
+    caption = record["caption"]
+    caption_center = caption[0] + caption[2] / 2
+    head_right = head[0] + head[2]
+    if caption_center < head_right or caption[0] > head_right + head[2] * 0.5:
+        fail(issues, "portrait recipe P02 caption must sit to the right of and remain bound to the head")
+    title = rect(hero.get("title_bbox"), "hero.title_bbox", issues)
+    if title and abs(record["visible"][2] - title[2]) > title[2] * 0.05:
+        fail(issues, "portrait recipe P02 visible portrait width must align to title width within 5%")
+
+
+def _validate_recipe_p03(records, issues):
+    _validate_equal_head_scale("P03", records, issues)
+    _validate_below_portrait_captions("P03", records, issues)
+    if {record["depth"] for record in records} != {"equal"}:
+        fail(issues, "portrait recipe P03 subjects must use equal depth")
+    eyes = [record["eye"] for record in records]
+    head_height = min(record["head"][3] for record in records)
+    if max(eyes) - min(eyes) > head_height * 0.08:
+        fail(issues, "portrait recipe P03 eye lines must align within 8% of head height")
+    exposures = [record["visible"][1] + record["visible"][3] - record["head"][1] for record in records]
+    if min(exposures) <= 0 or max(exposures) / min(exposures) > 1.05:
+        fail(issues, "portrait recipe P03 visible exposure must align within 5%")
+
+
+def _validate_recipe_p04(group_box, records, issues):
+    _validate_equal_head_scale("P04", records, issues, tolerance_ratio=0.04, minimum_px=8)
+    if group_box and group_box[2] < (PORTRAIT_CONTENT_RIGHT - PORTRAIT_CONTENT_LEFT) * 0.82:
+        fail(issues, "portrait recipe P04 group width must occupy at least 82% of the portrait content width")
+    depths = [record["depth"] for record in records]
+    if depths.count("background") != 2 or depths.count("foreground") != 2:
+        fail(issues, "portrait recipe P04 requires exactly two background and two foreground subjects")
+    else:
+        background_z = [record["z_index"] for record in records if record["depth"] == "background"]
+        foreground_z = [record["z_index"] for record in records if record["depth"] == "foreground"]
+        if max(background_z) >= min(foreground_z):
+            fail(issues, "portrait recipe P04 foreground subjects must occupy the foremost z_index levels")
+    for record in records:
+        subject_id = record["id"]
+        if record["caption_alignment"] != "top" or record["caption_orientation"] != "vertical":
+            fail(issues, f"portrait recipe P04 subject {subject_id!r} caption must use vertical top alignment")
+        if abs(record["label"][1] - record["role"][1]) > 4:
+            fail(issues, f"portrait recipe P04 subject {subject_id!r} label and role tops must align within 4px")
+        if record["depth"] == "background" and record["shoulder_box"][2] <= record["head"][2]:
+            fail(issues, f"portrait recipe P04 background subject {subject_id!r} must expose both shoulders beyond the head width")
+        required_tokens = record["required_protected_tokens"]
+        protected_tokens = record["protected_tokens"]
+        if not isinstance(required_tokens, list) or any(not isinstance(token, str) or not token for token in required_tokens):
+            fail(issues, f"portrait recipe P04 subject {subject_id!r} requires a protected-token declaration list")
+            continue
+        if not isinstance(protected_tokens, list):
+            fail(issues, f"portrait recipe P04 subject {subject_id!r} requires measured protected_tokens")
+            continue
+        for token in required_tokens:
+            if token not in protected_tokens:
+                fail(issues, f"portrait recipe P04 subject {subject_id!r} must preserve protected token {token!r} as one DOM node")
+
+
+def validate_portrait_ensemble(hero, issues):
+    """Validate legacy ensembles or dispatch the frozen P01–P04 first-frame recipes."""
+    recipe_id = hero.get("recipe_id")
+    if recipe_id is None:
+        _validate_portrait_ensemble_legacy(hero, issues)
+        return
+    expected_counts = {"P01": 3, "P02": 1, "P03": 2, "P04": 4}
+    if recipe_id not in expected_counts:
+        fail(issues, "portrait-ensemble recipe_id must be P01, P02, P03 or P04")
+        return
+    subjects = hero.get("subjects")
+    if not isinstance(subjects, list):
+        fail(issues, f"portrait recipe {recipe_id} requires a subjects list")
+        return
+    expected_count = expected_counts[recipe_id]
+    if len(subjects) != expected_count:
+        fail(issues, f"portrait recipe {recipe_id} requires exactly {expected_count} subjects; got {len(subjects)}")
+        return
+    measured = _validate_portrait_recipe_common(hero, recipe_id, subjects, issues)
+    if measured is None:
+        return
+    group_box, records = measured
+    validators = {
+        "P01": lambda: _validate_recipe_p01(records, issues),
+        "P02": lambda: _validate_recipe_p02(hero, records, issues),
+        "P03": lambda: _validate_recipe_p03(records, issues),
+        "P04": lambda: _validate_recipe_p04(group_box, records, issues),
+    }
+    validators[recipe_id]()
+
+
+def validate_portrait_asset_qa(hero, asset_qa_path, issues):
+    """Check frozen portrait assets against the external QA record, not HTML data attributes."""
+    try:
+        record = json.loads(asset_qa_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        fail(issues, f"cannot read portrait asset QA record: {error}")
+        return
+    if record.get("status") != "agent-checked-human-review-needed":
+        fail(issues, "portrait asset QA record must be agent-checked-human-review-needed")
+    records = record.get("subjects")
+    if not isinstance(records, list):
+        fail(issues, "portrait asset QA record must contain subjects")
+        return
+    by_id = {item.get("id"): item for item in records if isinstance(item, dict) and isinstance(item.get("id"), str)}
+    for subject in hero.get("subjects", []):
+        if not isinstance(subject, dict):
+            continue
+        subject_id, expected_hash = subject.get("id"), subject.get("asset_sha256")
+        entry = by_id.get(subject_id)
+        if entry is None:
+            fail(issues, f"portrait asset QA record is missing {subject_id!r}")
+            continue
+        if entry.get("sha256") != expected_hash:
+            fail(issues, f"asset QA hash for {subject_id!r} differs from hero asset_sha256")
+        asset_relative = entry.get("alpha_asset")
+        if not isinstance(asset_relative, str) or not asset_relative:
+            fail(issues, f"asset QA record for {subject_id!r} requires alpha_asset")
+        else:
+            asset_path = asset_qa_path.parent / asset_relative
+            try:
+                actual_hash = hashlib.sha256(asset_path.read_bytes()).hexdigest()
+            except OSError as error:
+                fail(issues, f"cannot hash frozen alpha asset for {subject_id!r}: {error}")
+            else:
+                if actual_hash != entry.get("sha256"):
+                    fail(issues, f"frozen alpha asset hash mismatch for {subject_id!r}")
+        if entry.get("agent_alpha_check") != "passed":
+            fail(issues, f"asset QA record for {subject_id!r} must have agent_alpha_check=passed")
+        if entry.get("human_review") not in {"needed", "approved"}:
+            fail(issues, f"asset QA record for {subject_id!r} must retain human_review status")
+        previews = entry.get("qa_previews")
+        if not isinstance(previews, list) or len(previews) != 2:
+            fail(issues, f"asset QA record for {subject_id!r} requires dark and light qa_previews")
+        elif any(not isinstance(preview, str) or not (asset_qa_path.parent / preview).is_file() for preview in previews):
+            fail(issues, f"asset QA previews for {subject_id!r} must exist")
+
+
+def validate(manifest, png_path, proof_path, poster_html_path, plan_path=None, asset_qa_path=None):
     issues = []
     canvas = manifest.get("canvas", {})
     if canvas.get("width") != CANVAS_WIDTH:
@@ -363,8 +750,8 @@ def validate(manifest, png_path, proof_path, poster_html_path, plan_path=None):
         fail(issues, "hero must record the V1 visible geometry")
     else:
         strategy = hero.get("strategy")
-        if strategy not in {"imagegen", "mentor-portrait"}:
-            fail(issues, "hero.strategy must be imagegen or mentor-portrait")
+        if strategy not in {"imagegen", "mentor-portrait", "portrait-ensemble"}:
+            fail(issues, "hero.strategy must be imagegen, mentor-portrait or portrait-ensemble")
         if hero.get("measured_from_dom") is not True:
             fail(issues, "hero geometry must be measured from [data-hero] and [data-hero-copy] in Chromium")
         anchor, copy_height = hero.get("copy_anchor_bottom"), hero.get("copy_group_height")
@@ -378,6 +765,9 @@ def validate(manifest, png_path, proof_path, poster_html_path, plan_path=None):
             required_height = max(HERO_VISIBLE_HEIGHT_MIN, 1.2 * copy_height)
             if visible[3] < required_height:
                 fail(issues, f"hero visible height must be at least {required_height:g}px")
+        if strategy == "portrait-ensemble":
+            validate_portrait_ensemble(hero, issues)
+            validate_portrait_asset_qa(hero, asset_qa_path or poster_html_path.parent / "asset-qa.json", issues)
     validate_hero_surface_and_text_axes(manifest, issues)
 
     text_blocks = manifest.get("text_blocks")
@@ -528,13 +918,14 @@ def main():
     parser.add_argument("--render-proof", required=True, type=Path, help="renderer-produced render-proof.json")
     parser.add_argument("--poster-html", required=True, type=Path, help="formal self-contained poster.html")
     parser.add_argument("--plan", type=Path, help="plan.md; checks structured hero-title gold-keyword registration when supplied")
+    parser.add_argument("--asset-qa", type=Path, help="asset-qa.json; defaults beside poster.html for portrait-ensemble")
     args = parser.parse_args()
     try:
         manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         print(f"cannot read manifest: {error}", file=sys.stderr)
         return 2
-    issues = validate(manifest, args.png, args.render_proof, args.poster_html, args.plan)
+    issues = validate(manifest, args.png, args.render_proof, args.poster_html, args.plan, args.asset_qa)
     if issues:
         for issue in issues:
             print(f"invalid: {issue}", file=sys.stderr)
