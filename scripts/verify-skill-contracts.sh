@@ -35,10 +35,6 @@ for file in \
   references/daily-self-check.md \
   references/black-gold-system.md \
   assets/template/render.html \
-  assets/fonts/NotoSerifCJKsc-Bold.otf \
-  assets/fonts/NotoSansCJKsc-Regular.otf \
-  assets/fonts/NotoSansCJKsc-Medium.otf \
-  assets/fonts/LICENSES.md \
   assets/baseline/baseline-notes.md \
   assets/baseline/01-hero-approved.png \
   assets/baseline/poster-preview-approved.jpg \
@@ -52,7 +48,9 @@ do
 done
 
 require_text SKILL.md "固定渲染命令"
-require_text SKILL.md "Playwright Chromium"
+require_text SKILL.md "Chromium"
+require_text SKILL.md "fonts.googleapis.com"
+require_text SKILL.md "final.png"
 require_text SKILL.md "export_layout_manifest.py"
 require_text SKILL.md "配方选择索引"
 require_text references/black-gold-system.md "固定 Token"
@@ -61,7 +59,8 @@ require_text references/daily-plan-template.md "内容与营销确认稿"
 require_text references/content-planning.md "阅读区签名"
 require_text references/production-workflow.md "mentor-portrait"
 require_text references/daily-self-check.md "手机比例检查"
-require_text references/text-rendering-rules.md "NotoSansCJKsc-Regular.otf"
+require_text references/text-rendering-rules.md "Noto Sans SC 400/500"
+require_text references/text-rendering-rules.md "document.fonts.load()"
 require_text references/text-rendering-rules.md "data-chapter-label"
 require_text references/text-rendering-rules.md "data-fullwidth-text-axis"
 require_text references/text-rendering-rules.md "data-gold-keyword"
@@ -78,9 +77,9 @@ require_text references/daily-plan-template.md "portrait_recipe：P01 / P02 / P0
 require_text references/daily-self-check.md "人像首帧 P01–P04"
 
 personal_root='/'"Users/"
-if find "$ROOT" -type f ! -path "$ROOT/.git/*" ! -path "$ROOT/.venv/*" ! -path "$ROOT/cases/*" ! -path '*/__pycache__/*' -exec grep -n -F "$personal_root" {} \; | grep -q .; then
+if find "$ROOT" -type f ! -path "$ROOT/.git" ! -path "$ROOT/.git/*" ! -path "$ROOT/.venv/*" ! -path "$ROOT/cases/*" ! -path '*/__pycache__/*' -exec grep -n -F "$personal_root" {} \; | grep -q .; then
   echo "independent Skill contains a personal local path" >&2
   exit 1
 fi
 
-echo "verified: distributable black-gold Skill rule chain is self-contained"
+echo "verified: distributable black-gold Skill rule chain is complete"

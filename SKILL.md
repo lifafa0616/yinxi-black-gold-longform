@@ -1,11 +1,11 @@
 ---
 name: yinxi-black-gold-longform
-description: 从中文长文案、真实素材和行动信息制作可编辑的黑金手机长图 HTML，并由同一浏览器导出 1080px PNG；适用于课程、活动、研究、权益与专业内容海报。
+description: 从中文长文案、真实素材和行动信息制作黑金手机长图，并通过中间 HTML 在 Chromium 中导出正式 1080px PNG；适用于课程、活动、研究、权益与专业内容海报。
 ---
 
 # Yinxi Black Gold Longform
 
-制作一张宽 1080px、连续阅读的黑金手机长图。正式母版是可编辑、自包含的 `poster.html`：图片和三套正式字体均嵌入文件，并由同一 Chromium 导出 `final.png`。
+制作一张宽 1080px、连续阅读的黑金手机长图。唯一正式发布物是 `final.png`。`render.html` 是可编辑源，`poster.html` 是供同一 Chromium 测量和截图的中间渲染文档：本地图片会内嵌，三种正式字重从 Google Fonts 加载。
 
 ## 边界
 
@@ -30,7 +30,7 @@ description: 从中文长文案、真实素材和行动信息制作可编辑的�
 6. 选择一个 R 配方，再按真实信息关系选择 L 契约。相邻模块必须在结构骨架、图文关系或导航节奏上有明确变化；不可只重复“左标签 + 左标题 + 列表”。
 7. 先局部验收主视觉或人像，再合成整图。人像首帧先冻结非生成式透明资产并完成双底色边缘 QA，再检查头部尺度、完整肩部与肢体、`lower-fade-only`、人物—说明绑定和 P01–P04 层级；主题主视觉检查顶部/底部融合、标题优先级、低亮度/低饱和度/低暖黄、单一视觉中心、语义相关性与无生成式文字。随后用浏览器实测满幅表面、通栏文字轴、字号、换行、溢出、碰撞、章节号和人物 Manifest v4。视觉融入、人物边缘/重量、封面语义去重和金色词语语义准确性须标 `human-review-needed`，不能自动判定通过。
 8. 在一张连续 HTML/CSS/SVG 母版上合成背景、资产与精确文字。阅读区高度由内容决定，不能按 9:16 分页、缩字或添加无意义装饰。
-9. 先将 `render.html` 打包为自包含 `poster.html`，再从同一 HTML 导出并验证 `final.png`。HTML 和 PNG 不得来自两份版式源。
+9. 先将 `render.html` 打包为中间 `poster.html`，再从同一 HTML 导出并验证 `final.png`。HTML 和 PNG 不得来自两份版式源；中间 HTML 不是离线交付物。
 
 ## 固定渲染命令
 
@@ -41,6 +41,8 @@ python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 .venv/bin/playwright install chromium
 ```
+
+本机同时保留项目源目录和已安装 Skill 时，只维护项目源目录中的一套 `.venv`，已安装 Skill 的 `.venv` 可链接到它。运行依赖只有 Playwright、Pillow 和 Chromium；不需要 FontTools。生成时还必须能访问 `fonts.googleapis.com` 与 `fonts.gstatic.com`。
 
 确认前如已由用户指定输出根目录，仅可运行：
 
@@ -57,7 +59,7 @@ python3 -m venv .venv
 .venv/bin/python scripts/verify-case-layout.py <case>/layout-manifest.json --poster-html <case>/poster.html --png <case>/final.png --render-proof <case>/render-proof.json --plan <case>/plan.md
 ```
 
-打包器会嵌入本地图片、CSS 图片资源与 Bold Serif、Regular Sans、Medium Sans 三套正式字体。任何字体、图片、画布宽度或 Playwright Chromium 不符合要求时必须失败，绝不回退系统字体、外部图片或另一套排版引擎。
+打包器会内嵌本地图片与 CSS 图片资源，并只接入经过批准的 Google Fonts CSS：`Noto Serif SC 700`、`Noto Sans SC 400/500`。测量器和渲染器必须确认浏览器确实加载到这三种字重；网络不可用、字体未加载、图片损坏、画布宽度错误或 Chromium 不符合要求时必须失败，绝不静默回退系统字体、外部图片或另一套排版引擎。
 
 ## 预算与验收
 

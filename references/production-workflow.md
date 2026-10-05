@@ -1,6 +1,6 @@
 # 长图生产流程
 
-唯一生产真源为 `1080px 连续 HTML → 自包含 poster.html → 同一 Chromium 导出 final.png`。阅读区不是固定比例帧。
+唯一生产链为 `1080px 连续 render.html → 中间 poster.html → 同一 Chromium 导出 final.png`。`final.png` 是唯一正式发布物；阅读区不是固定比例帧。
 
 ## 1. 确认与素材收集
 
@@ -25,8 +25,8 @@
 ## 3. 渲染与客观检查
 
 1. 用 `render.html` 建立连续画布；解释正文用 Regular，日期、价格、行动、关键数据和标签用 Medium 或更高。
-2. `package_poster_html.py` 将图片、CSS 资源、Serif Bold、Sans Regular、Sans Medium 打包进 `poster.html`。
+2. `package_poster_html.py` 将本地图片和 CSS 图片资源打包进 `poster.html`，并接入批准的 Google Fonts `Noto Serif SC 700` 与 `Noto Sans SC 400/500`。
 3. `export_layout_manifest.py` 从 Chromium 取得换行、容器、首帧、CTA、章节导航与碰撞数据；不得手填。
-4. `render_longform.py` 从该 `poster.html` 导出 `final.png`；`verify-case-layout.py` 重新测量并验证。
+4. `render_longform.py` 先确认三种 Google 字重真实加载，再从该 `poster.html` 导出 `final.png`；`verify-case-layout.py` 重新测量并验证。联网失败不得回退系统字体。
 
 超长图只允许同一 Chromium 的像素条带拼接。验收看完整 PNG 和命中风险区裁片；文字由字号、换行、溢出和碰撞规则保障，不另设主观手机比例检查。

@@ -14,7 +14,7 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from package_poster_html import validate_portable_document
+from package_poster_html import validate_render_document
 from export_layout_manifest import build_manifest
 
 ROLE_MINIMUMS = {"title": 110, "module-title": 40, "body": 36, "price": 36, "action": 36, "date": 36, "data": 36, "metric": 36, "meta": 26}
@@ -115,14 +115,16 @@ def validate_render_proof(path, issues):
     if proof.get("engine") != "playwright-chromium":
         fail(issues, "render proof engine must be playwright-chromium")
     if proof.get("fonts_ready") is not True:
-        fail(issues, "render proof must confirm bundled fonts_ready")
+        fail(issues, "render proof must confirm Google Fonts are ready")
+    if proof.get("font_source") != "google-fonts-css2":
+        fail(issues, "render proof font_source must be google-fonts-css2")
     if proof.get("browser_raster_from_layout_engine") is not True:
         fail(issues, "render proof must confirm browser raster came from the layout engine")
     if proof.get("png_direct_from_layout_engine") is not True:
         if proof.get("pixel_stitched") is not True or proof.get("capture_mode") != "browser-segmented-pixel-stitch":
             fail(issues, "non-direct PNG output is only allowed for browser-segmented pixel stitching")
-    if proof.get("portable_html") is not True:
-        fail(issues, "render proof must confirm the PNG came from portable poster.html")
+    if proof.get("render_document") is not True:
+        fail(issues, "render proof must confirm the PNG came from poster.html render document")
     if proof.get("images_ready") is not True:
         fail(issues, "render proof must confirm embedded images loaded")
     width = proof.get("canvas_width")
@@ -132,12 +134,12 @@ def validate_render_proof(path, issues):
 
 def validate_poster_html(path, issues):
     try:
-        proof = validate_portable_document(path.read_text(encoding="utf-8"))
+        proof = validate_render_document(path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as error:
-        fail(issues, f"portable poster.html is invalid: {error}")
+        fail(issues, f"poster.html render document is invalid: {error}")
         return
-    if proof.get("embedded_font_count") != 3:
-        fail(issues, "portable poster.html must embed all three production fonts")
+    if proof.get("font_source") != "google-fonts-css2" or proof.get("embedded_font_count") != 0:
+        fail(issues, "poster.html must use approved Google Fonts without embedded font files")
 
 
 def validate_manifest_provenance(manifest, poster_html_path, issues, measure_manifest=build_manifest):
@@ -916,7 +918,7 @@ def main():
     parser.add_argument("manifest", type=Path, help="layout-manifest.json exported after browser rendering")
     parser.add_argument("--png", required=True, type=Path, help="final PNG from render_longform.py")
     parser.add_argument("--render-proof", required=True, type=Path, help="renderer-produced render-proof.json")
-    parser.add_argument("--poster-html", required=True, type=Path, help="formal self-contained poster.html")
+    parser.add_argument("--poster-html", required=True, type=Path, help="intermediate poster.html render document")
     parser.add_argument("--plan", type=Path, help="plan.md; checks structured hero-title gold-keyword registration when supplied")
     parser.add_argument("--asset-qa", type=Path, help="asset-qa.json; defaults beside poster.html for portrait-ensemble")
     args = parser.parse_args()
@@ -930,7 +932,7 @@ def main():
         for issue in issues:
             print(f"invalid: {issue}", file=sys.stderr)
         return 1
-    print("verified: portable poster.html, browser proof, final PNG dimensions, master-canvas samples and layout constraints")
+    print("verified: poster render document, Google Fonts proof, final PNG dimensions, master-canvas samples and layout constraints")
     return 0
 
 

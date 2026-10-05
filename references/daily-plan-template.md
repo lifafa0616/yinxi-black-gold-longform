@@ -93,12 +93,12 @@ Rxx：
 
 ```text
 编辑源：render.html
-正式母版：poster.html
+中间渲染文档：poster.html（需要 Google Fonts 网络访问）
 打包证明：poster-proof.json
 发布 PNG：final.png
 渲染证明：render-proof.json
 Layout Manifest：layout-manifest.json；poster SHA256：
-三套嵌入字体：Serif Bold / Sans Regular / Sans Medium
+Google Fonts：Noto Serif SC 700 / Noto Sans SC 400 / 500；加载证明：
 完整导出次数：
 ImageGen 次数与理由：
 验收状态：

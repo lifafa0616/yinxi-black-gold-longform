@@ -155,7 +155,7 @@ track-safe text axis x=112–968（外侧轨道 + 32px 内缩时）
 |---|---|
 | 所有案例 | `producer/layout_engine/poster_sha256`、`canvas`、阅读区 `Lxx` 序列、`background_samples` 与阅读区边界 `seams[].sample_points` 的真实 PNG 采样 |
 | 首帧 | `data-hero-cover`、`copy_anchor_bottom`、`copy_group_height`、主视觉实际 `visible_bbox` 与满幅 `surface_bbox`；不得用图片画布 bbox 代替主体 bbox |
-| 渲染真源 | `poster.html`（资产与字体内嵌）、`render-proof.json`：`engine=playwright-chromium`、正式字体和图片已加载、浏览器栅格来自同一布局引擎；超长时只允许该浏览器的像素条带拼接 |
+| 渲染真源 | `poster.html`（本地图片内嵌、字体由 Google Fonts 加载）、`render-proof.json`：`engine=playwright-chromium`、三种正式字重和图片已加载、浏览器栅格来自同一布局引擎；超长时只允许该浏览器的像素条带拼接 |
 | 换行文字 | 每个发生换行的 `title` / `module-title` / `body` 的 `rendered_lines`、实际 `font_size`；行数据从最终浏览器渲染树导出 |
 | 容器 | `id`、`rect`、`padding`、子元素 bbox / role / font_size / `rendered_lines` |
 | CTA 数据组 | `cta_groups[].id`；每个价格和 QR 子元素写同一个 `cta_group`，即使它们不在同一容器 |
@@ -164,4 +164,4 @@ track-safe text axis x=112–968（外侧轨道 + 32px 内缩时）
 | 正文人物 | `portrait_mode`、`intro_text_top`、关联文字区 top/bottom；`transparent` 记录 `visible_head_top` 与 `visible_bbox`，`masked/source-crop` 记录 `image_rect_top` 与 `image_rect` |
 | 人像首帧 | `strategy=portrait-ensemble`、`recipe_id=P01–P04`、`title_bbox`、人物组 bbox/中心；逐人 head/face/shoulder/visible/body/caption/label/role bbox、depth/z-index、渐隐参数、保护 token 与 pairwise overlap |
 
-先使用：`.venv/bin/python scripts/export_layout_manifest.py --input <case>/poster.html --output <case>/layout-manifest.json`；再使用：`.venv/bin/python scripts/verify-case-layout.py <case>/layout-manifest.json --poster-html <case>/poster.html --png <case>/final.png --render-proof <case>/render-proof.json`。验证失败必须回到布局；测量器无法导出真实坐标、真实 PNG 或渲染证明时，该案例不能写 `agent-checked`。具体 HTML 标记见 `text-rendering-rules.md`，不得改为手写 JSON。
+先使用：`.venv/bin/python scripts/export_layout_manifest.py --input <case>/poster.html --output <case>/layout-manifest.json`；再使用：`.venv/bin/python scripts/verify-case-layout.py <case>/layout-manifest.json --poster-html <case>/poster.html --png <case>/final.png --render-proof <case>/render-proof.json --plan <case>/plan.md`。验证失败必须回到布局；测量器无法导出真实坐标、真实 PNG、Google Fonts 加载证明或渲染证明时，该案例不能写 `agent-checked`。具体 HTML 标记见 `text-rendering-rules.md`，不得改为手写 JSON。

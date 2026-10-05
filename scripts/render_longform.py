@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Render the formal portable poster.html through Playwright Chromium.
+"""Render an intermediate poster.html through Playwright Chromium.
 
 This script is deliberately a renderer, not an editor. It renders the exact
-self-contained delivery produced by package_poster_html.py, then emits the
-published PNG and machine-produced proof from the same browser layout tree.
+render document produced by package_poster_html.py, verifies that its Google
+Fonts faces actually loaded, then emits the published PNG and machine-produced
+proof from the same browser layout tree.
 """
 
 import argparse
@@ -12,7 +13,7 @@ import json
 import sys
 from pathlib import Path
 
-from package_poster_html import validate_portable_document
+from package_poster_html import FONT_READY_SCRIPT, validate_render_document
 
 
 CANVAS_WIDTH = 1080
@@ -57,8 +58,8 @@ def save_browser_raster(page, canvas, bbox, output_path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Render a longform HTML source with the bundled fonts.")
-    parser.add_argument("--input", required=True, type=Path, help="formal self-contained case poster.html containing #longform-canvas")
+    parser = argparse.ArgumentParser(description="Render a longform HTML source after verified Google Fonts loading.")
+    parser.add_argument("--input", required=True, type=Path, help="case poster.html render document containing #longform-canvas")
     parser.add_argument("--output", required=True, type=Path, help="final 1080px PNG path")
     parser.add_argument("--render-proof", required=True, type=Path, help="machine-produced render proof JSON path")
     args = parser.parse_args()
@@ -66,9 +67,9 @@ def main():
     if not args.input.is_file():
         parser.error(f"input HTML does not exist: {args.input}")
     try:
-        portable_proof = validate_portable_document(args.input.read_text(encoding="utf-8"))
+        document_proof = validate_render_document(args.input.read_text(encoding="utf-8"))
     except (OSError, ValueError) as error:
-        parser.error(f"input must be a portable poster.html made by package_poster_html.py: {error}")
+        parser.error(f"input must be a poster.html render document made by package_poster_html.py: {error}")
 
     try:
         from playwright.sync_api import sync_playwright
@@ -82,18 +83,7 @@ def main():
         browser = playwright.chromium.launch()
         page = browser.new_page(viewport={"width": CANVAS_WIDTH, "height": 1600}, device_scale_factor=1)
         page.goto(args.input.resolve().as_uri(), wait_until="networkidle")
-        fonts_ready = page.evaluate("""async () => {
-            await Promise.all([
-                document.fonts.load('700 32px "Yinxi Noto Serif SC"'),
-                document.fonts.load('400 32px "Yinxi Noto Sans SC"'),
-                document.fonts.load('500 32px "Yinxi Noto Sans SC"'),
-            ]);
-            await document.fonts.ready;
-            return document.fonts.status === 'loaded' &&
-                document.fonts.check('700 32px "Yinxi Noto Serif SC"') &&
-                document.fonts.check('400 32px "Yinxi Noto Sans SC"') &&
-                document.fonts.check('500 32px "Yinxi Noto Sans SC"');
-        }""")
+        fonts_ready = page.evaluate(FONT_READY_SCRIPT)
         canvas = page.locator("#longform-canvas")
         if canvas.count() != 1:
             browser.close()
@@ -102,7 +92,7 @@ def main():
         bbox = canvas.bounding_box()
         if not fonts_ready:
             browser.close()
-            print("bundled production fonts did not load; refusing system-font fallback", file=sys.stderr)
+            print("Google production fonts did not load; refusing system-font fallback", file=sys.stderr)
             return 1
         broken_images = page.evaluate("""() => Array.from(document.images)
             .filter((image) => !image.complete || image.naturalWidth === 0)
@@ -125,13 +115,15 @@ def main():
         proof = {
             "engine": "playwright-chromium",
             "fonts_ready": True,
-            "fonts": ["Yinxi Noto Serif SC 700", "Yinxi Noto Sans SC 400", "Yinxi Noto Sans SC 500"],
+            "fonts": document_proof["required_fonts"],
+            "font_source": document_proof["font_source"],
+            "remote_font_stylesheet": document_proof["remote_font_stylesheet"],
             "canvas_width": round(bbox["width"], 2),
             "browser_raster_from_layout_engine": True,
             "png_direct_from_layout_engine": capture_mode == "direct",
-            "portable_html": portable_proof["portable_html"],
-            "embedded_font_count": portable_proof["embedded_font_count"],
-            "embedded_asset_reference_count": portable_proof["embedded_asset_reference_count"],
+            "render_document": document_proof["render_document"],
+            "embedded_font_count": 0,
+            "embedded_asset_reference_count": document_proof["embedded_asset_reference_count"],
             "images_ready": True,
             "capture_mode": capture_mode,
             "segment_count": segment_count,

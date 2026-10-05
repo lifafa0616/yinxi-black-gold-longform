@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export measured layout data from a portable poster.html through Chromium.
+"""Export measured layout data from a poster.html render document through Chromium.
 
 The source document supplies semantic data attributes; this script supplies the
 numbers.  It deliberately refuses to accept a hand-written manifest so checks
@@ -13,7 +13,7 @@ import json
 import sys
 from pathlib import Path
 
-from package_poster_html import validate_portable_document
+from package_poster_html import FONT_READY_SCRIPT, validate_render_document
 
 
 CANVAS_WIDTH = 1080
@@ -281,12 +281,12 @@ EXPORT_SCRIPT = r"""() => {
 
 
 def poster_sha256(input_path: Path) -> str:
-    """Hash the portable file's stored bytes, without newline translation."""
+    """Hash the render document's stored bytes, without newline translation."""
     return hashlib.sha256(input_path.read_bytes()).hexdigest()
 
 
 def build_manifest(input_path: Path) -> dict:
-    """Measure one portable poster through Chromium and return its manifest.
+    """Measure one poster render document through Chromium and return its manifest.
 
     This is intentionally shared by the exporter and verifier: verification
     remeasures the supplied poster instead of trusting manifest provenance
@@ -294,7 +294,7 @@ def build_manifest(input_path: Path) -> dict:
     """
     document_bytes = input_path.read_bytes()
     document = document_bytes.decode("utf-8")
-    validate_portable_document(document)
+    validate_render_document(document)
     try:
         from playwright.sync_api import sync_playwright
     except ModuleNotFoundError as error:
@@ -304,20 +304,10 @@ def build_manifest(input_path: Path) -> dict:
         browser = playwright.chromium.launch()
         page = browser.new_page(viewport={"width": CANVAS_WIDTH, "height": 1600}, device_scale_factor=1)
         page.goto(input_path.resolve().as_uri(), wait_until="networkidle")
-        fonts_ready = page.evaluate("""async () => {
-            await Promise.all([
-                document.fonts.load('700 32px "Yinxi Noto Serif SC"'),
-                document.fonts.load('400 32px "Yinxi Noto Sans SC"'),
-                document.fonts.load('500 32px "Yinxi Noto Sans SC"'),
-            ]);
-            await document.fonts.ready;
-            return document.fonts.check('700 32px "Yinxi Noto Serif SC"') &&
-                document.fonts.check('400 32px "Yinxi Noto Sans SC"') &&
-                document.fonts.check('500 32px "Yinxi Noto Sans SC"');
-        }""")
+        fonts_ready = page.evaluate(FONT_READY_SCRIPT)
         if not fonts_ready:
             browser.close()
-            raise RuntimeError("bundled production fonts did not load; refusing to export layout from fallback fonts")
+            raise RuntimeError("Google production fonts did not load; refusing to export layout from fallback fonts")
         try:
             manifest = page.evaluate(EXPORT_SCRIPT)
         except Exception as error:
@@ -341,14 +331,14 @@ def build_manifest(input_path: Path) -> dict:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Export a real Chromium layout manifest from portable poster.html.")
-    parser.add_argument("--input", required=True, type=Path, help="self-contained poster.html")
+    parser = argparse.ArgumentParser(description="Export a real Chromium layout manifest from an intermediate poster.html render document.")
+    parser.add_argument("--input", required=True, type=Path, help="network-backed poster.html render document")
     parser.add_argument("--output", required=True, type=Path, help="generated layout-manifest.json")
     args = parser.parse_args()
     try:
         manifest = build_manifest(args.input)
     except (OSError, UnicodeDecodeError, ValueError, RuntimeError) as error:
-        parser.error(f"input must be a portable poster.html made by package_poster_html.py: {error}")
+        parser.error(f"input must be a poster.html render document made by package_poster_html.py: {error}")
         return 1
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
