@@ -1,6 +1,6 @@
 # 人像首帧契约 P01–P04
 
-仅在用户明确要求人物作为首帧主视觉、`portrait_hero_decision=mentor-portrait-by-request` 时读取。它扩展 `L01 封面主张`，不替代正文中的 `L13 人物信息`。
+仅在第一屏决定为人物开场、`portrait_hero_decision=mentor-portrait-by-request` 时读取；该决定可以来自用户选择“先记住导师或嘉宾”，也可以来自用户选择“由我根据内容判断”后的 Agent 判断。它扩展 `L01 封面主张`，不替代正文中的 `L13 人物信息`。
 
 ## 1. 配方路由
 

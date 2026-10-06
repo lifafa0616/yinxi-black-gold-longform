@@ -6,8 +6,8 @@
 
 ```text
 □ source_copy、fact_locks、display_copy 来源映射和本轮确认/素材记录均可追溯
-□ 确认稿已同轮询问人像和二维码；上传素材已登记到白名单，未为其再次开启确认
-□ portrait_hero_decision 默认 theme-imagegen；只有用户明确要求时才使用 mentor-portrait
+□ 确认稿已同轮询问“第一眼先记住内容还是人物”、人像和二维码；选择与上传素材已登记到白名单，未增加新的确认轮次
+□ portrait_hero_decision 与用户选项或选项 3 的 Agent 判断一致；没有足够依据或未选择时使用 theme-imagegen
 □ 二维码已上传则直接用于 CTA；明确没有则为待提供占位且发布状态为待补输入
 □ poster.html 内嵌本地图片，仅从批准的 Google Fonts 地址加载三种正式字重；字体加载失败会终止，不会回退系统字体
 □ final.png 由同一 poster.html 经 Playwright Chromium 导出，宽 1080px

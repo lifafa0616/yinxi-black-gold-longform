@@ -111,6 +111,33 @@ def portrait_recipe_fixture(recipe_id, subject_count=None):
 
 
 class PreconfirmationToolTests(unittest.TestCase):
+    def test_skill_asks_plain_language_first_screen_choice_in_the_copy_confirmation_round(self):
+        skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        planning = (ROOT / "references" / "content-planning.md").read_text(encoding="utf-8")
+        plan_template = (ROOT / "references" / "daily-plan-template.md").read_text(encoding="utf-8")
+        workflow = (ROOT / "references" / "production-workflow.md").read_text(encoding="utf-8")
+        combined = "\n".join((skill, planning, plan_template, workflow))
+
+        for wording in (
+            "这张长图的开头第一屏，你希望读者第一眼先记住什么？",
+            "先记住内容主题",
+            "先记住导师或嘉宾",
+            "由我根据内容判断",
+        ):
+            with self.subTest(wording=wording):
+                self.assertIn(wording, combined)
+        self.assertIn("选项 1：`theme-imagegen`", combined)
+        self.assertIn("选项 2：`mentor-portrait-by-request`", combined)
+        self.assertIn("没有足够依据或用户未选择时，使用选项 1", combined)
+        self.assertIn("不增加新的确认轮次", combined)
+
+    def test_public_workflow_does_not_keep_the_old_portrait_opt_in_rule(self):
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        workflow = (ROOT / "references" / "production-workflow.md").read_text(encoding="utf-8")
+
+        self.assertNotIn("只有用户明确要求时才作为首帧", readme)
+        self.assertNotIn("默认首帧使用主题主视觉", workflow)
+
     def test_skill_routes_requested_portrait_hero_to_frozen_recipe_contract(self):
         portrait_contract = ROOT / "references" / "portrait-first-frame-contract.md"
         self.assertTrue(portrait_contract.is_file())
