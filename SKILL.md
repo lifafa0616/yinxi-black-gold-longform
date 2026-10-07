@@ -18,7 +18,7 @@ description: 从中文长文案、真实素材和行动信息制作黑金手机�
 
 先读并填写 [daily-plan-template.md](references/daily-plan-template.md)、[content-planning.md](references/content-planning.md) 的内容与营销两层分析、[layout-recipes.md](references/layout-recipes.md) 的配方选择索引、[black-gold-system.md](references/black-gold-system.md) 的主题与首帧规则、[text-rendering-rules.md](references/text-rendering-rules.md) 和 [daily-self-check.md](references/daily-self-check.md)。
 
-只在命中时再读所选 `Lxx` 的 [layout-contracts.md](references/layout-contracts.md)、卡片/网格/人物/章节号的 [layout-rules.md](references/layout-rules.md)，或异常输入时的 [production-workflow.md](references/production-workflow.md)。第一屏选择结果为人物开场时，必须额外读取 [portrait-first-frame-contract.md](references/portrait-first-frame-contract.md)，按人数与人物关系选择 P01–P04。
+只在命中时再读所选 `Lxx` 的 [layout-contracts.md](references/layout-contracts.md)、卡片/网格/人物/章节号的 [layout-rules.md](references/layout-rules.md)，或异常输入时的 [production-workflow.md](references/production-workflow.md)。第一屏选择结果为人物开场时，必须额外读取 [portrait-first-frame-contract.md](references/portrait-first-frame-contract.md)，按人数与人物关系选择 P01–P04。首帧之后命中 `L13 人物 / 导师信息` 时，改读 [portrait-inner-page-contract.md](references/portrait-inner-page-contract.md)，按逐人文案密度与人数选择 IP01–IP04；P 与 IP 两套配方不得跨场景调用。
 
 ## 固定生产关口
 
@@ -28,7 +28,7 @@ description: 从中文长文案、真实素材和行动信息制作黑金手机�
 4. 保留内部 `portrait_hero_decision`。选项 1：`theme-imagegen`，导师/嘉宾人像如有则用于中段；选项 2：`mentor-portrait-by-request`，并按 `P02 单人 / P03 双人等权 / P01 三人中心在前 / P04 四人两层分组` 路由；选项 3 由 Agent 判断，仅当人物本身是核心卖点、已有清晰原图且人数与关系可用时选择人像开场，否则选择内容主题。没有足够依据或用户未选择时，使用选项 1。未命中已冻结人数与关系时停在 `human-review-needed`，不能硬套配方。已上传二维码直接用于 CTA；用户明确没有二维码时使用“待提供二维码”占位，并标记不可发布/待补输入。
 5. 首帧是无章节号的封面：只保留一个承担项目/活动语境的眉题，主标题承担核心主张，副标题只补充新信息。主题主视觉以 `[data-hero-surface]` 从中下部满幅延展至两侧，并包含唯一 `[data-hero]`；标题先读、主视觉后读，二者之间不得留下无意义大空场。后续第一个内容大模块才从 `01` 连续编号。
 6. 选择一个 R 配方，再按真实信息关系选择 L 契约。相邻模块必须在结构骨架、图文关系或导航节奏上有明确变化；不可只重复“左标签 + 左标题 + 列表”。
-7. 先局部验收主视觉或人像，再合成整图。人像首帧先冻结非生成式透明资产并完成双底色边缘 QA，再检查头部尺度、完整肩部与肢体、`lower-fade-only`、人物—说明绑定和 P01–P04 层级；主题主视觉检查顶部/底部融合、标题优先级、低亮度/低饱和度/低暖黄、单一视觉中心、语义相关性与无生成式文字。随后用浏览器实测满幅表面、通栏文字轴、字号、换行、溢出、碰撞、章节号和人物 Manifest v4。视觉融入、人物边缘/重量、封面语义去重和金色词语语义准确性须标 `human-review-needed`，不能自动判定通过。
+7. 先局部验收主视觉或人像，再合成整图。人像首帧先冻结非生成式透明资产并完成双底色边缘 QA，再检查头部尺度、完整肩部与肢体、`lower-fade-only`、人物—说明绑定和 P01–P04 层级；人物内页检查 IP01–IP04 路由、逐人信息单元、统一头部尺度/露出比例、内容轴与正文层级，不得做成第二张封面。主题主视觉检查顶部/底部融合、标题优先级、低亮度/低饱和度/低暖黄、单一视觉中心、语义相关性与无生成式文字。随后用浏览器实测满幅表面、通栏文字轴、字号、换行、溢出、碰撞、章节号和人物 Manifest v4。视觉融入、人物边缘/重量、封面语义去重和金色词语语义准确性须标 `human-review-needed`，不能自动判定通过。
 8. 在一张连续 HTML/CSS/SVG 母版上合成背景、资产与精确文字。阅读区高度由内容决定，不能按 9:16 分页、缩字或添加无意义装饰。
 9. 先将 `render.html` 打包为中间 `poster.html`，再从同一 HTML 导出并验证 `final.png`。HTML 和 PNG 不得来自两份版式源；中间 HTML 不是离线交付物。
 

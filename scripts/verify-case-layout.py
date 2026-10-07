@@ -735,6 +735,45 @@ def validate_portrait_asset_qa(hero, asset_qa_path, issues):
             fail(issues, f"asset QA previews for {subject_id!r} must exist")
 
 
+def validate_inner_portrait_recipes(portraits, issues):
+    """Keep L13 portrait modules in the IP namespace and outside the cover."""
+    expected_counts = {"IP01": (2, 2), "IP02": (3, 3), "IP03": (4, 8), "IP04": (4, 4)}
+    groups = defaultdict(list)
+    for portrait in portraits:
+        if not isinstance(portrait, dict):
+            continue
+        recipe_id = portrait.get("inner_recipe_id")
+        if recipe_id is None:
+            continue
+        if recipe_id not in expected_counts:
+            fail(issues, "inner portrait recipe_id must be IP01, IP02, IP03 or IP04")
+            continue
+        groups[recipe_id].append(portrait)
+        if portrait.get("reading_zone_contract") != "L13":
+            fail(issues, f"inner portrait recipe {recipe_id} must belong to an L13 reading zone")
+        if portrait.get("is_in_hero_cover") is not False:
+            fail(issues, f"inner portrait recipe {recipe_id} cannot appear inside the hero cover")
+        if not isinstance(portrait.get("unit_id"), str) or not portrait["unit_id"].strip():
+            fail(issues, f"inner portrait recipe {recipe_id} requires a non-empty unit_id for every person")
+        if portrait.get("caption_alignment") not in {"left", "center", "right", "start", "end"}:
+            fail(issues, f"inner portrait recipe {recipe_id} requires a measured caption_alignment")
+
+    for recipe_id, members in groups.items():
+        minimum, maximum = expected_counts[recipe_id]
+        count = len(members)
+        if minimum == maximum and count != minimum:
+            fail(issues, f"inner portrait recipe {recipe_id} requires exactly {minimum} units; got {count}")
+        elif not minimum <= count <= maximum:
+            fail(issues, f"inner portrait recipe {recipe_id} requires {minimum}–{maximum} units; got {count}")
+        unit_ids = [member.get("unit_id") for member in members]
+        valid_ids = [unit_id for unit_id in unit_ids if isinstance(unit_id, str) and unit_id.strip()]
+        if len(valid_ids) != len(set(valid_ids)):
+            fail(issues, f"inner portrait recipe {recipe_id} requires unique unit_id values")
+        alignments = {member.get("caption_alignment") for member in members}
+        if len(alignments) > 1:
+            fail(issues, f"inner portrait recipe {recipe_id} must use one caption alignment")
+
+
 def validate(manifest, png_path, proof_path, poster_html_path, plan_path=None, asset_qa_path=None):
     issues = []
     canvas = manifest.get("canvas", {})
@@ -882,7 +921,8 @@ def validate(manifest, png_path, proof_path, poster_html_path, plan_path=None, a
             if box[0] < protected_box[0] + protected_box[2] and box[0] + box[2] > protected_box[0] and box[1] < protected_box[1] + protected_box[3] and box[1] + box[3] > protected_box[1]:
                 fail(issues, f"chapters[{index}] overlaps protected_boxes[{protected_index}]")
 
-    for index, portrait in enumerate(manifest.get("portraits", [])):
+    portraits = manifest.get("portraits", [])
+    for index, portrait in enumerate(portraits):
         if not isinstance(portrait, dict):
             fail(issues, f"portraits[{index}] must be an object")
             continue
@@ -908,6 +948,7 @@ def validate(manifest, png_path, proof_path, poster_html_path, plan_path=None, a
             fail(issues, f"portraits[{index}] {label} must align to intro_text_top within ±8px")
         if subject[1] < top or subject[1] + subject[3] > bottom:
             fail(issues, f"portraits[{index}] {mode} bbox exceeds its related text region")
+    validate_inner_portrait_recipes(portraits, issues)
     if plan_path is not None:
         validate_plan_gold_keyword_registration(manifest, plan_path, issues)
     return issues

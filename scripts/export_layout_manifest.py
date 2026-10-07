@@ -147,9 +147,16 @@ EXPORT_SCRIPT = r"""() => {
     const intro = one(group, "[data-portrait-intro]", "portrait");
     const region = one(group, "[data-portrait-related-text-region]", "portrait");
     const subject = one(group, "[data-portrait-subject]", "portrait");
+    const recipeRoot = group.closest("[data-inner-portrait-recipe]");
+    const readingZone = group.closest("[data-reading-zone]");
     const regionBox = box(region);
     const subjectBox = box(subject);
     const portrait = {
+      inner_recipe_id: recipeRoot ? recipeRoot.dataset.innerPortraitRecipe : null,
+      unit_id: group.dataset.portraitUnit || null,
+      reading_zone_contract: readingZone ? readingZone.dataset.contract || null : null,
+      is_in_hero_cover: Boolean(group.closest("[data-hero-cover]")),
+      caption_alignment: getComputedStyle(intro).textAlign,
       portrait_mode: mode,
       intro_text_top: box(intro)[1],
       related_text_region: {top: regionBox[1], bottom: number(regionBox[1] + regionBox[3])},

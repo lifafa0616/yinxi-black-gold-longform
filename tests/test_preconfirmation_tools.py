@@ -655,7 +655,9 @@ class PreconfirmationToolTests(unittest.TestCase):
                 <p data-layout-role=\"body\">Body copy</p>
                 <i data-seam-sample=\"intro-body\"></i><section data-reading-zone=\"chapter-zone\" data-contract=\"L02\" data-major-module=\"one\"><p data-chapter-label=\"one\">Section</p><span data-layout-chapter=\"one\">01</span><span data-internal-index>01</span></section>
                 <p data-protected-text=\"claim\">Protected claim</p>
-                <section data-portrait=\"transparent\"><p data-portrait-intro>Intro</p><div data-portrait-related-text-region><div data-portrait-subject>Portrait</div></div></section>
+                <section data-reading-zone=\"speakers\" data-contract=\"L13\" data-major-module=\"speakers\"><div data-inner-portrait-recipe=\"IP01\">
+                <section data-portrait=\"transparent\" data-portrait-unit=\"speaker-a\"><p data-portrait-intro style=\"text-align:left\">Intro</p><div data-portrait-related-text-region><div data-portrait-subject>Portrait</div></div></section>
+                </div></section>
                 </main></body></html>""",
                 encoding="utf-8",
             )
@@ -674,6 +676,11 @@ class PreconfirmationToolTests(unittest.TestCase):
             self.assertIn("font_weight", manifest["text_blocks"][0])
             self.assertEqual(manifest["protected_boxes"][0]["id"], "claim")
             self.assertEqual(manifest["portraits"][0]["portrait_mode"], "transparent")
+            self.assertEqual(manifest["portraits"][0]["inner_recipe_id"], "IP01")
+            self.assertEqual(manifest["portraits"][0]["unit_id"], "speaker-a")
+            self.assertEqual(manifest["portraits"][0]["reading_zone_contract"], "L13")
+            self.assertFalse(manifest["portraits"][0]["is_in_hero_cover"])
+            self.assertEqual(manifest["portraits"][0]["caption_alignment"], "left")
 
 
 if __name__ == "__main__":

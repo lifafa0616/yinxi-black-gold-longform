@@ -107,7 +107,7 @@ track-safe text axis x=112–968（外侧轨道 + 32px 内缩时）
 
 ### 人像与头像
 
-- 本节默认服务正文人物模块。用户明确要求人物作为首帧主视觉时，改读 `portrait-first-frame-contract.md`，使用透明人物和 P01–P04；不得把正文的 `masked/source-crop` 规则带入人像首帧。
+- 本节默认服务正文人物模块。命中 `L13` 时必须再读 `portrait-inner-page-contract.md` 并选择 IP01–IP04 或已验证的 M04-3C。用户明确要求人物作为首帧主视觉时，改读 `portrait-first-frame-contract.md`，使用透明人物和 P01–P04；两套编号与结构不得混用。
 - 人像裁切先根据原图主体选择裁切锚点，再应用圆形或异形蒙版；不得一律居中裁切。
 - 裁切后必须完整保留头顶、脸部和下巴等识别区域；任何头像切掉头部、脸部或下巴，均视为失败。
 - 人像、姓名、标签和介绍必须归属同一固定信息块；文字不得侵入相邻人物的头像、姓名或介绍区域。
@@ -161,7 +161,7 @@ track-safe text axis x=112–968（外侧轨道 + 32px 内缩时）
 | CTA 数据组 | `cta_groups[].id`；每个价格和 QR 子元素写同一个 `cta_group`，即使它们不在同一容器 |
 | 通栏文字轴 | `text_axes[]` 的轴 ID、阅读区、每个成员的真实 bbox；同一轴成员的左右边界必须相同 |
 | 章节号 | bbox、`zone_id`、显示号、`label_top`、章节字号、内部索引字号、受保护文字 bbox；首帧不应有章节号 |
-| 正文人物 | `portrait_mode`、`intro_text_top`、关联文字区 top/bottom；`transparent` 记录 `visible_head_top` 与 `visible_bbox`，`masked/source-crop` 记录 `image_rect_top` 与 `image_rect` |
+| 正文人物 | `inner_recipe_id=IP01–IP04`（命中 IP 配方时）、`unit_id`、`reading_zone_contract=L13`、`is_in_hero_cover=false`、`caption_alignment`、`portrait_mode`、`intro_text_top`、关联文字区 top/bottom；`transparent` 记录 `visible_head_top` 与 `visible_bbox`，`masked/source-crop` 记录 `image_rect_top` 与 `image_rect` |
 | 人像首帧 | `strategy=portrait-ensemble`、`recipe_id=P01–P04`、`title_bbox`、人物组 bbox/中心；逐人 head/face/shoulder/visible/body/caption/label/role bbox、depth/z-index、渐隐参数、保护 token 与 pairwise overlap |
 
 先使用：`.venv/bin/python scripts/export_layout_manifest.py --input <case>/poster.html --output <case>/layout-manifest.json`；再使用：`.venv/bin/python scripts/verify-case-layout.py <case>/layout-manifest.json --poster-html <case>/poster.html --png <case>/final.png --render-proof <case>/render-proof.json --plan <case>/plan.md`。验证失败必须回到布局；测量器无法导出真实坐标、真实 PNG、Google Fonts 加载证明或渲染证明时，该案例不能写 `agent-checked`。具体 HTML 标记见 `text-rendering-rules.md`，不得改为手写 JSON。
