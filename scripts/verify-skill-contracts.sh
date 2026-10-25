@@ -36,9 +36,6 @@ for file in \
   references/daily-self-check.md \
   references/black-gold-system.md \
   assets/template/render.html \
-  assets/baseline/baseline-notes.md \
-  assets/baseline/01-hero-approved.png \
-  assets/baseline/poster-preview-approved.jpg \
   scripts/package_poster_html.py \
   scripts/create_case_plan.py \
   scripts/render_longform.py \
