@@ -22,6 +22,8 @@
 - 主标题、模块标题、章节标签、日期、价格、行动和关键数据不可降为 Regular；解释性正文不得伪加粗为 Medium。
 - 正式浏览器换行中，主标题、模块标题与正文不得有单个汉字、单个英文字母或无意义符号独占一行。先按 4px 步进缩小到下限，再扩宽、重排或扩高；不得裁切或隐藏。
 - 同一阅读区采用通栏标题、副标题和说明时，全部叶子文字标记同一个 `data-fullwidth-text-axis` 值，并以相同 CSS 宽度、左边界和右边界排版。不得为了章节号、装饰或“视觉留白”预先缩窄其中任一文本框；需要真实图文分栏或信息卡时，改用相应契约而非伪装为通栏。
+- 正文模块的长判断可拆为短标题与补充说明，两者保持同一通栏轴；与右侧章节号同高度时，标题的 `data-protected-text` 可标在承载实际字形的内层 span，不能借此忽略真实文字碰撞。
+- 主题首帧副标题可以与主视觉场景叠置；文字层级在场景之上，必要时只对其附近使用约 40%–60% 的母版同色半透明渐变，不缩窄文本轴，也不以不透光色块遮住场景。可读性与透图感须看实际 PNG。
 - 首帧主标题的每个金色词用独立 `<span data-gold-keyword="hero-title">原文词语</span>` 标记。Plan 必须为每个标记单列原文依据；浏览器可检查标记与登记是否存在，不能判断语义是否准确，后者为 `human-review-needed`。
 
 ## 3. 验收底线
@@ -50,7 +52,7 @@
   </section>
   <section data-reading-zone="V2" data-contract="L16" data-major-module="learning-path">
     <p data-chapter-label="learning-path">PATH</p>
-    <span data-layout-chapter="learning-path" aria-hidden="true">02</span>
+    <span data-layout-chapter="learning-path" aria-hidden="true">01</span>
     <span data-internal-index aria-hidden="true">01</span>
     <h2 data-layout-role="module-title">模块标题</h2>
     <p data-layout-role="body">解释性说明</p>

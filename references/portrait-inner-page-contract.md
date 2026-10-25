@@ -4,6 +4,8 @@
 
 ## 1. 配方路由
 
+正文双人 IP01、三人 IP02、四人 IP04 的独立 HTML/CSS 见 [代码索引：人像正文](recipe-code-index.md#人像正文)，与首帧 P 配方分目录存放。
+
 先按人物数量、逐人文案密度和阅读关系选择配方，不能只按“有几张照片”选择。
 
 | 配方 | 适用输入 | 固定信息关系 | 状态 |
@@ -46,13 +48,13 @@ title → portrait module   64–96px
 module outer gap          48–96px
 gold                     #CCAA77
 primary text             #F0ECE2
-secondary text           rgba(240,236,226,.64–.76)
+secondary text           #94918A
 hairline                  rgba(204,170,119,.28–.46)
-panel fill                rgba(240,236,226,.025–.055)
+panel fill                #181816
 panel radius              24–32px（IP01）；IP04 可使用拱形顶
-name size                 34–44px
-role size                 24–30px
-bio size                  24–28px
+name size                 40–44px（模块标题角色）
+role size                 ≥26px（短身份元信息）；解释段按正文处理
+bio size                  ≥36px Regular
 ```
 
 - 只允许低对比金线、暗金光晕或与整图连续的抽象背景辅助分组；不能把每个人做成独立发光海报。

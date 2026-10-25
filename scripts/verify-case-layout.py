@@ -25,6 +25,8 @@ CANVAS_RGB = (16, 16, 15)
 PIXEL_TOLERANCE = 2
 HERO_TOP_GAP_MIN = 64
 HERO_TOP_GAP_MAX = 144
+THEME_SURFACE_TITLE_OFFSET_MIN = -64
+THEME_SURFACE_TITLE_OFFSET_MAX = 32
 HERO_VISIBLE_HEIGHT_MIN = 560
 PORTRAIT_CONTENT_LEFT = 112
 PORTRAIT_CONTENT_RIGHT = 968
@@ -48,6 +50,16 @@ def rect(value, label, issues):
         fail(issues, f"{label} width and height must be non-negative")
         return None
     return x, y, width, height
+
+
+def validate_theme_hero_title_overlap(hero, issues):
+    title = rect(hero.get("title_bbox"), "hero.title_bbox", issues)
+    surface = rect(hero.get("surface_bbox"), "hero.surface_bbox", issues)
+    if title and surface:
+        offset = surface[1] - (title[1] + title[3])
+        if not THEME_SURFACE_TITLE_OFFSET_MIN <= offset <= THEME_SURFACE_TITLE_OFFSET_MAX:
+            fail(issues, "theme hero surface top must meet title bottom within "
+                 f"{THEME_SURFACE_TITLE_OFFSET_MIN}–{THEME_SURFACE_TITLE_OFFSET_MAX}px")
 
 
 def point(value, label, issues):
@@ -800,9 +812,12 @@ def validate(manifest, png_path, proof_path, poster_html_path, plan_path=None, a
         if not isinstance(anchor, (int, float)) or not isinstance(copy_height, (int, float)) or copy_height < 0 or not visible:
             fail(issues, "hero requires copy_anchor_bottom, non-negative copy_group_height and visible_bbox")
         else:
-            top_gap = visible[1] - anchor
-            if top_gap < HERO_TOP_GAP_MIN or top_gap > HERO_TOP_GAP_MAX:
-                fail(issues, f"hero visible top gap must be {HERO_TOP_GAP_MIN}–{HERO_TOP_GAP_MAX}px after copy_anchor_bottom")
+            if strategy == "imagegen":
+                validate_theme_hero_title_overlap(hero, issues)
+            else:
+                top_gap = visible[1] - anchor
+                if top_gap < HERO_TOP_GAP_MIN or top_gap > HERO_TOP_GAP_MAX:
+                    fail(issues, f"hero visible top gap must be {HERO_TOP_GAP_MIN}–{HERO_TOP_GAP_MAX}px after copy_anchor_bottom")
             required_height = max(HERO_VISIBLE_HEIGHT_MIN, 1.2 * copy_height)
             if visible[3] < required_height:
                 fail(issues, f"hero visible height must be at least {required_height:g}px")
@@ -872,9 +887,8 @@ def validate(manifest, png_path, proof_path, poster_html_path, plan_path=None, a
 
     for group_id, members in collect_cta_members(manifest, issues).items():
         price, qr = members["price"], members["qr"]
-        if (price is None) != (qr is None):
-            fail(issues, f"cta_group {group_id!r} must contain both price and qr when either is present")
-        elif price and qr and abs((price[1] + price[3] / 2) - (qr[1] + qr[3] / 2)) > 96:
+        # L10 allows either item to be absent; align them only when both appear.
+        if price and qr and abs((price[1] + price[3] / 2) - (qr[1] + qr[3] / 2)) > 96:
             fail(issues, f"cta_group {group_id!r} QR must align with its price data group within 96px")
 
     qr_boxes = [item for item in manifest.get("measured_elements", []) if isinstance(item, dict) and item.get("role") == "qr"]

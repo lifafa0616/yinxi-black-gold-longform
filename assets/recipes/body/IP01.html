@@ -1,0 +1,43 @@
+<style>
+.recipe-IP01 .people {width:856px;margin-top:96px}
+.recipe-IP01 .identity {position:relative;z-index:2;min-width:0}
+.recipe-IP01 .name {display:block;color:var(--gold);font:500 40px/1.25 "Noto Sans SC",sans-serif}
+.recipe-IP01 .role {margin-top:20px;color:var(--white);font:500 26px/1.45 "Noto Sans SC",sans-serif}
+.recipe-IP01 .bio {margin-top:20px;color:var(--muted);font:400 36px/1.5 "Noto Sans SC",sans-serif}
+.recipe-IP01 .person {position:relative}
+.recipe-IP01 .portrait {display:block;width:100%;height:100%;object-fit:contain;object-position:center bottom}
+.recipe-IP01 .people {display:grid;gap:96px}
+.recipe-IP01 .person {display:grid;grid-template-columns:320px 1fr;gap:40px;align-items:start;min-height:420px;padding:32px;border:1px solid var(--line);border-radius:30px;background:var(--panel)}
+.recipe-IP01 .person:nth-child(2) {grid-template-columns:1fr 320px}
+.recipe-IP01 .person:nth-child(2) .portrait-slot {grid-column:2;grid-row:1}
+.recipe-IP01 .person:nth-child(2) .identity {grid-column:1;grid-row:1}
+.recipe-IP01 .portrait-slot {height:440px;margin-top:-32px}
+.recipe-IP01 .portrait {mask-image:linear-gradient(to bottom,#000 calc(100% - 240px),transparent 100%)}
+</style>
+<div class="recipe recipe-IP01">
+<section class="recipe-body" data-reading-zone="IP01" data-contract="L13" data-major-module="IP01">
+  <p class="section-label" data-chapter-label="IP01">HOSTS &amp; GUESTS</p>
+  <span class="section-number" data-layout-chapter="IP01" aria-hidden="true">01</span>
+  <h2 class="section-heading" data-layout-role="module-title" data-fullwidth-text-axis="IP01-axis"><span data-protected-text>分享者</span></h2>
+<div class="people" data-inner-portrait-recipe="IP01">
+<figure class="person" data-portrait="transparent" data-portrait-unit="IP01-speaker-1">
+
+  <div class="portrait-slot"><img class="portrait" data-portrait-subject src="{{portrait_1}}" alt="讲师甲"></div>
+  <figcaption class="identity" data-portrait-related-text-region data-portrait-intro>
+    <span class="name" data-layout-role="module-title">讲师甲</span>
+    <p class="role" data-layout-role="meta">专业领域</p>
+    <p class="bio" data-layout-role="body">填写与本次主题相关的讲师经历。</p>
+  </figcaption>
+</figure>
+<figure class="person" data-portrait="transparent" data-portrait-unit="IP01-speaker-2">
+
+  <div class="portrait-slot"><img class="portrait" data-portrait-subject src="{{portrait_2}}" alt="讲师乙"></div>
+  <figcaption class="identity" data-portrait-related-text-region data-portrait-intro>
+    <span class="name" data-layout-role="module-title">讲师乙</span>
+    <p class="role" data-layout-role="meta">专业领域</p>
+    <p class="bio" data-layout-role="body">填写与本次主题相关的讲师经历。</p>
+  </figcaption>
+</figure>
+</div>
+</section>
+</div>

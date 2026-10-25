@@ -1,0 +1,114 @@
+[
+  {
+    "file": "hero/P02.html",
+    "source": "cases/portrait-solo-contract-test/render.html",
+    "sha256": "ad25bc92c42c576dc23fa62de59fe42c5683c9f10c96a00a780f5d9cb3aeb502",
+    "method": "HTML extraction",
+    "notes": "原人物图像定位及测量节点仅为历史参考；替换图像后逐人重校，不可继承验收。"
+  },
+  {
+    "file": "hero/P03.html",
+    "source": "cases/portrait-dual-equal-contract-test/render.html",
+    "sha256": "eb06584d2216839e2a3c3e7bb527aec6e49f426058b9a24888415422898b436b",
+    "method": "HTML extraction",
+    "notes": "原人物图像定位及测量节点仅为历史参考；替换图像后逐人重校，不可继承验收。"
+  },
+  {
+    "file": "hero/P01.html",
+    "source": "cases/portrait-three-equal-contract-test/render.html",
+    "sha256": "b18362d2d904a485c2f855853a8f64a4eb99c8f9384f0f543597a54229d68862",
+    "method": "HTML extraction",
+    "notes": "原人物图像定位及测量节点仅为历史参考；替换图像后逐人重校，不可继承验收。"
+  },
+  {
+    "file": "hero/P04.html",
+    "source": "cases/portrait-four-tiered-contract-test/render.html",
+    "sha256": "dea5d4209df6e6b856bd58c78d78b434695892101fb8e066ad311e5e7190a766",
+    "method": "HTML extraction",
+    "notes": "原人物图像定位及测量节点仅为历史参考；替换图像后逐人重校，不可继承验收。"
+  },
+  {
+    "file": "body/IP01.html",
+    "source": "external:portrait-inner-recipes-2026-10-05-v2/dual/render.html",
+    "sha256": "a82790c4c2c615c1eacbdfdd8b4f8f4019c550680330cda22700c052ca497d5b",
+    "method": "HTML structure adaptation",
+    "notes": "去除测试封面；保留图文关系，改流式文字并使用当前字号/token。IP01 按现契约首行左图；IP04 将高差收至72px、文字顶线对齐。"
+  },
+  {
+    "file": "body/IP02.html",
+    "source": "external:portrait-inner-recipes-2026-10-05-v2/triple/render.html",
+    "sha256": "1ea1d0a9a1b95554702b60efa8c197b653b92f1b948ff2cb78e721d152c90037",
+    "method": "HTML structure adaptation",
+    "notes": "去除测试封面；保留图文关系，改流式文字并使用当前字号/token。IP01 按现契约首行左图；IP04 将高差收至72px、文字顶线对齐。"
+  },
+  {
+    "file": "body/IP04.html",
+    "source": "external:portrait-inner-recipes-2026-10-05-v2/quad/render.html",
+    "sha256": "136eb8f6b19ff44c2ef5f1a20955ec567082825a77b2cb183f559d14eb089c0d",
+    "method": "HTML structure adaptation",
+    "notes": "去除测试封面；保留图文关系，改流式文字并使用当前字号/token。IP01 按现契约首行左图；IP04 将高差收至72px、文字顶线对齐。"
+  },
+  {
+    "file": "content/L02.html",
+    "source": "cases/ai-portfolio-product-analysis-camp/render.html",
+    "sha256": "965a6983cf4fdf09e7ff2919ce1efc9052fc1416fca94c70e9297ede5b82b848",
+    "method": "HTML structure extraction",
+    "notes": "按当前字体与动态高度适配；不是原成图逐像素复刻。"
+  },
+  {
+    "file": "content/L04.html",
+    "source": "cases/ai-portfolio-product-analysis-camp/render.html",
+    "sha256": "965a6983cf4fdf09e7ff2919ce1efc9052fc1416fca94c70e9297ede5b82b848",
+    "method": "HTML structure extraction",
+    "notes": "按当前字体与动态高度适配；不是原成图逐像素复刻。"
+  },
+  {
+    "file": "content/L12.html",
+    "source": "cases/ai-tomorrow-course-palette-20261023/render.sh",
+    "sha256": "18722d06bc89a0709ab5eccd3d58ec2af2df11182cfc38237f0dd38b5c4ea684",
+    "method": "FFmpeg structure translated to HTML",
+    "notes": "按当前字体与动态高度适配；不是原成图逐像素复刻。"
+  },
+  {
+    "file": "content/L14.html",
+    "source": "cases/ai-portfolio-product-analysis-camp/render.html",
+    "sha256": "965a6983cf4fdf09e7ff2919ce1efc9052fc1416fca94c70e9297ede5b82b848",
+    "method": "HTML structure extraction",
+    "notes": "按当前字体与动态高度适配；不是原成图逐像素复刻。"
+  },
+  {
+    "file": "content/L15-H3.html",
+    "source": "cases/ai-tomorrow-course-palette-20261023/render.sh",
+    "sha256": "18722d06bc89a0709ab5eccd3d58ec2af2df11182cfc38237f0dd38b5c4ea684",
+    "method": "FFmpeg structure translated to HTML",
+    "notes": "按当前字体与动态高度适配；不是原成图逐像素复刻。"
+  },
+  {
+    "file": "content/L09-H2.html",
+    "source": "cases/ai-tomorrow-course-palette-20261023/render.sh",
+    "sha256": "18722d06bc89a0709ab5eccd3d58ec2af2df11182cfc38237f0dd38b5c4ea684",
+    "method": "FFmpeg structure translated to HTML",
+    "notes": "按当前字体与动态高度适配；不是原成图逐像素复刻。"
+  },
+  {
+    "file": "content/L13-single.html",
+    "source": "cases/ai-portfolio-product-analysis-camp/render.html",
+    "sha256": "965a6983cf4fdf09e7ff2919ce1efc9052fc1416fca94c70e9297ede5b82b848",
+    "method": "HTML structure extraction",
+    "notes": "按当前字体与动态高度适配；不是原成图逐像素复刻。"
+  },
+  {
+    "file": "content/L10.html",
+    "source": "cases/ai-portfolio-product-analysis-camp/render.html",
+    "sha256": "965a6983cf4fdf09e7ff2919ce1efc9052fc1416fca94c70e9297ede5b82b848",
+    "method": "HTML structure extraction",
+    "notes": "按当前字体与动态高度适配；不是原成图逐像素复刻。"
+  },
+  {
+    "file": "content/L01.html",
+    "source": "cases/ai-portfolio-product-analysis-camp/render.html",
+    "sha256": "965a6983cf4fdf09e7ff2919ce1efc9052fc1416fca94c70e9297ede5b82b848",
+    "method": "HTML structure adaptation",
+    "notes": "满幅竖向场景及动态文案高度；以当前首帧规则适配。"
+  }
+]

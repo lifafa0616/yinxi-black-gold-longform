@@ -1,0 +1,106 @@
+<style>
+.recipe-P01 .longform-serif {font-family:"Noto Serif SC",serif;font-weight:700}
+.recipe-P01 .longform-sans {font-family:"Noto Sans SC",sans-serif;font-weight:400}
+.recipe-P01 .longform-sans-medium {font-family:"Noto Sans SC",sans-serif;font-weight:500}
+.recipe-P01 figure {margin:0}
+.recipe-P01 .hero {position:relative;width:100%;height:100%;overflow:visible}
+.recipe-P01 .rail {position:absolute;left:48px;top:90px;bottom:104px;width:1px;background:linear-gradient(transparent,rgba(240,236,226,.14) 16%,rgba(240,236,226,.14) 86%,transparent)}
+.recipe-P01 .rail-dot {position:absolute;left:39px;top:99px;width:18px;height:18px;border:1px solid var(--gold);border-radius:50%;background:var(--ink)}
+.recipe-P01 .eyebrow {position:absolute;left:112px;top:76px;margin:0;color:var(--gold);font:500 23px/1.35 "Noto Sans SC",sans-serif;letter-spacing:2px;z-index:6}
+.recipe-P01 .hero-copy {position:absolute;left:112px;top:210px;width:856px;z-index:6}
+.recipe-P01 .hero-title {width:856px;height:300px;margin:0;color:var(--white);font:700 120px/1.08 "Noto Serif SC",serif;letter-spacing:-4px}
+.recipe-P01 .hero-title .gold {color:var(--gold)}
+.recipe-P01 .hero-sub {width:856px;height:122px;margin:36px 0 0;color:var(--muted);font:500 42px/1.42 "Noto Sans SC",sans-serif;letter-spacing:.4px}
+.recipe-P01 .rule {position:absolute;left:112px;top:704px;width:856px;height:1px;background:linear-gradient(90deg,var(--gold),rgba(204,170,119,.08));z-index:5}
+.recipe-P01 .hero-surface {position:absolute;inset:0;pointer-events:none;z-index:1;background:linear-gradient(to bottom,transparent 31%,rgba(24,24,22,.20) 47%,rgba(16,16,15,.98) 82%)}
+.recipe-P01 .portrait-identity-field {position:absolute;left:0;right:0;top:1220px;height:420px;z-index:1;background:linear-gradient(to bottom,rgba(16,16,15,0),rgba(16,16,15,.46) 22%,rgba(16,16,15,.84) 58%,#10100F 100%)}
+.recipe-P01 .hero-group {position:absolute;left:112px;top:780px;width:856px;height:800px;z-index:2;overflow:visible;isolation:isolate}
+.recipe-P01 .hero-group::before {display:none}
+.recipe-P01 .portrait-geometry, .recipe-P01 .portrait-imagegen-backdrop {display:none}
+.recipe-P01 .portrait-subject {position:absolute;top:0;height:800px;overflow:visible}
+.recipe-P01 .portrait-image {position:absolute;inset:0;overflow:visible;z-index:1}
+.recipe-P01 .cisi .portrait-image {z-index:3}
+.recipe-P01 .yuyi .portrait-image {z-index:2}
+.recipe-P01 .portrait-image img {position:absolute;display:block;max-width:none;filter:grayscale(1) saturate(.18) contrast(.98) brightness(.92);-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.recipe-P01 .wizard .portrait-image img {-webkit-mask-image:linear-gradient(to bottom,#000 0px,#000 390px,rgba(0,0,0,.76) 490px,transparent 630px);mask-image:linear-gradient(to bottom,#000 0px,#000 390px,rgba(0,0,0,.76) 490px,transparent 630px)}
+.recipe-P01 .cisi .portrait-image img {filter:grayscale(1) saturate(.18) contrast(1) brightness(.98);-webkit-mask-image:linear-gradient(to bottom,#000 0px,#000 445px,rgba(0,0,0,.76) 545px,transparent 685px);mask-image:linear-gradient(to bottom,#000 0px,#000 445px,rgba(0,0,0,.76) 545px,transparent 685px)}
+.recipe-P01 .yuyi .portrait-image img {-webkit-mask-image:linear-gradient(to bottom,#000 0px,#000 330px,rgba(0,0,0,.62) 455px,transparent 575px);mask-image:linear-gradient(to bottom,#000 0px,#000 330px,rgba(0,0,0,.62) 455px,transparent 575px)}
+.recipe-P01 .portrait-subject::after {display:none}
+.recipe-P01 .caption {position:absolute;top:620px;width:260px;color:var(--white);z-index:5}
+.recipe-P01 .caption-name {display:block;height:46px;color:var(--gold);font:500 40px/1.08 "Noto Sans SC",sans-serif}
+.recipe-P01 .caption-role {display:block;height:34px;margin-top:4px;color:var(--muted);font:400 26px/1.25 "Noto Sans SC",sans-serif;white-space:nowrap}
+.recipe-P01 .wizard {left:0;width:440px}
+.recipe-P01 .wizard .portrait-image img {left:0;top:46px;width:440px}
+.recipe-P01 .wizard .caption {left:0}
+.recipe-P01 .cisi {left:128px;width:600px}
+.recipe-P01 .cisi .portrait-image img {left:0;top:1px;width:600px}
+.recipe-P01 .cisi .caption {left:175px}
+.recipe-P01 .yuyi {left:488px;width:415px}
+.recipe-P01 .yuyi .portrait-image img {left:0;top:35px;width:415px}
+.recipe-P01 .yuyi .caption {left:100px}
+.recipe-P01 .measure {position:absolute;pointer-events:none;opacity:0}
+.recipe-P01 .wizard .head-box {left:138px;top:70px;width:190px;height:190px}
+.recipe-P01 .wizard .eye-line {left:138px;top:157px;width:190px;height:1px}
+.recipe-P01 .wizard .shoulder {left:0;top:300px;width:330px;height:1px}
+.recipe-P01 .wizard .body-box {left:0;top:300px;width:280px;height:300px}
+.recipe-P01 .wizard .visible-box {left:0;top:70px;width:435px;height:530px}
+.recipe-P01 .cisi .head-box {left:205px;top:70px;width:190px;height:190px}
+.recipe-P01 .cisi .eye-line {left:205px;top:157px;width:190px;height:1px}
+.recipe-P01 .cisi .shoulder {left:160px;top:300px;width:280px;height:1px}
+.recipe-P01 .cisi .body-box {left:160px;top:300px;width:280px;height:300px}
+.recipe-P01 .cisi .visible-box {left:64px;top:70px;width:467px;height:530px}
+.recipe-P01 .yuyi .head-box {left:105px;top:70px;width:190px;height:190px}
+.recipe-P01 .yuyi .eye-line {left:105px;top:157px;width:190px;height:1px}
+.recipe-P01 .yuyi .shoulder {left:67px;top:300px;width:300px;height:1px}
+.recipe-P01 .yuyi .body-box {left:67px;top:300px;width:300px;height:290px}
+.recipe-P01 .yuyi .visible-box {left:67px;top:70px;width:300px;height:520px}
+.recipe-P01 .hero {height:1840px}
+.recipe-P01 .hero-title {height:auto;min-height:300px}
+.recipe-P01 .hero-sub {height:auto;font-weight:400}
+.recipe-P01 .eyebrow {font-size:40px}
+.recipe-P01 .caption-role, .recipe-P01 .role-col {font-size:26px}
+.recipe-P01 .role-col {text-shadow:none}
+.recipe-P01 .caption {text-align:center}
+.recipe-P01 .grid {display:none}
+
+/* Flow anchors: long titles move the entire portrait stage, not only the text. */
+.recipe-P01 .hero{height:auto;padding-top:76px;padding-bottom:96px}
+.recipe-P01 .eyebrow{position:relative;top:auto;width:856px}
+.recipe-P01 .hero-copy{position:relative;top:auto;margin-top:80px}
+.recipe-P01 .rule{position:relative;display:block;top:auto;margin-top:64px;margin-bottom:36px}
+.recipe-P01 .hero-surface{position:relative;inset:auto;width:1080px;height:1100px}
+.recipe-P01 .hero-group{top:0}
+.recipe-P01 .identity-field,.recipe-P01 .portrait-identity-field{top:600px}
+</style>
+<div class="recipe recipe-P01">
+<section class="hero" data-reading-zone="V1" data-contract="L01" data-hero-cover>
+      <span class="rail" aria-hidden="true"></span><span class="rail-dot" aria-hidden="true"></span>
+      <p class="eyebrow longform-sans-medium">人物主题</p>
+      <div class="hero-copy" data-hero-copy>
+        <h1 class="hero-title longform-serif" data-fullwidth-text-axis="V1-copy" data-layout-id="V1-title" data-layout-role="title" data-protected-text="V1-title">三个人物，<span class="gold" data-gold-keyword="hero-title">平等</span>入画</h1>
+        <p class="hero-sub longform-sans-medium" data-fullwidth-text-axis="V1-copy" data-layout-id="V1-sub" data-layout-role="module-title">以头部对齐，而非以原图大小排版</p>
+      </div>
+      <span class="rule" aria-hidden="true"></span>
+      <div class="hero-surface" data-hero-surface><div class="poster-imagegen-backdrop" aria-hidden="true"></div><div class="portrait-identity-field" aria-hidden="true"></div>
+        <div class="hero-group" data-hero="portrait-ensemble" data-portrait-recipe="P01" data-hero-ensemble aria-label="三位等权人物组成的首帧主视觉">
+          <div class="portrait-imagegen-backdrop" aria-hidden="true"></div>
+
+          <figure class="portrait-subject wizard" data-hero-subject="wizard" data-depth="background" data-z-index="1" data-silhouette-cut-mode="lower-fade-only" data-lower-fade-start-y="1216" data-lower-fade-transition-px="240">
+            <figcaption class="caption" data-hero-subject-caption data-caption-alignment="center" data-caption-orientation="horizontal"><span class="caption-name" data-hero-subject-label>讲师甲</span><span class="caption-role" data-hero-subject-role>专业领域</span></figcaption>
+            <div class="portrait-image"><img src="{{portrait_1}}" alt="讲师甲真人形象"></div>
+            <i class="measure visible-box" data-hero-visible></i><i class="measure head-box" data-hero-head-box></i><i class="measure eye-line" data-hero-eye-line></i><i class="measure shoulder" data-hero-shoulder-below data-hero-shoulder-visible></i><i class="measure body-box" data-hero-body-visible></i>
+          </figure>
+          <figure class="portrait-subject cisi" data-hero-subject="cisi" data-depth="foreground" data-z-index="3" data-silhouette-cut-mode="lower-fade-only" data-lower-fade-start-y="1226" data-lower-fade-transition-px="240">
+            <figcaption class="caption" data-hero-subject-caption data-caption-alignment="center" data-caption-orientation="horizontal"><span class="caption-name" data-hero-subject-label>讲师乙</span><span class="caption-role" data-hero-subject-role>专业领域</span></figcaption>
+            <div class="portrait-image"><img src="{{portrait_2}}" alt="讲师乙真人形象"></div>
+            <i class="measure visible-box" data-hero-visible></i><i class="measure head-box" data-hero-head-box></i><i class="measure eye-line" data-hero-eye-line></i><i class="measure shoulder" data-hero-shoulder-below data-hero-shoulder-visible></i><i class="measure body-box" data-hero-body-visible></i>
+          </figure>
+          <figure class="portrait-subject yuyi" data-hero-subject="yuyi" data-depth="background" data-z-index="2" data-silhouette-cut-mode="lower-fade-only" data-lower-fade-start-y="1145" data-lower-fade-transition-px="245">
+            <figcaption class="caption" data-hero-subject-caption data-caption-alignment="center" data-caption-orientation="horizontal"><span class="caption-name" data-hero-subject-label>讲师丙</span><span class="caption-role" data-hero-subject-role>专业领域</span></figcaption>
+            <div class="portrait-image"><img src="{{portrait_3}}" alt="讲师丙卡通形象"></div>
+            <i class="measure visible-box" data-hero-visible></i><i class="measure head-box" data-hero-head-box></i><i class="measure eye-line" data-hero-eye-line></i><i class="measure shoulder" data-hero-shoulder-below data-hero-shoulder-visible></i><i class="measure body-box" data-hero-body-visible></i>
+          </figure>
+        </div>
+      </div>
+    </section>
+</div>

@@ -1,0 +1,106 @@
+<style>
+.recipe-P04 figure {margin:0}
+.recipe-P04 .longform-serif {font-family:"Noto Serif SC",serif;font-weight:700}
+.recipe-P04 .longform-sans {font-family:"Noto Sans SC",sans-serif;font-weight:400}
+.recipe-P04 .longform-sans-medium {font-family:"Noto Sans SC",sans-serif;font-weight:500}
+.recipe-P04 .hero {position:relative;width:100%;height:100%}
+.recipe-P04 .rail {position:absolute;left:48px;top:90px;bottom:104px;width:1px;background:linear-gradient(transparent,rgba(240,236,226,.14) 16%,rgba(240,236,226,.14) 86%,transparent);z-index:7}
+.recipe-P04 .rail-dot {position:absolute;left:39px;top:99px;width:18px;height:18px;border:1px solid var(--gold);border-radius:50%;background:var(--ink);z-index:7}
+.recipe-P04 .eyebrow {position:absolute;left:112px;top:76px;margin:0;color:var(--gold);font:500 23px/1.35 "Noto Sans SC",sans-serif;letter-spacing:2px;z-index:8}
+.recipe-P04 .hero-copy {position:absolute;left:112px;top:210px;width:856px;z-index:8}
+.recipe-P04 .hero-title {width:856px;height:300px;margin:0;color:var(--white);font:700 120px/1.08 "Noto Serif SC",serif;letter-spacing:-4px}
+.recipe-P04 .gold {color:var(--gold)}
+.recipe-P04 .hero-sub {width:856px;height:122px;margin:36px 0 0;color:var(--muted);font:500 42px/1.42 "Noto Sans SC",sans-serif;letter-spacing:.4px}
+.recipe-P04 .rule {position:absolute;left:112px;top:704px;width:856px;height:1px;background:linear-gradient(90deg,var(--gold),rgba(204,170,119,.08));z-index:8}
+.recipe-P04 .hero-surface {position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(to bottom,transparent 31%,rgba(24,24,22,.18) 47%,rgba(16,16,15,.98) 88%)}
+.recipe-P04 .grid {position:absolute;inset:0;opacity:.48;background:linear-gradient(90deg,transparent 23.9%,var(--line) 24%,transparent 24.1%,transparent 47.9%,var(--line) 48%,transparent 48.1%,transparent 71.9%,var(--line) 72%,transparent 72.1%),linear-gradient(180deg,transparent 6.7%,var(--line) 6.8%,transparent 6.9%,transparent 45.4%,rgba(204,170,119,.12) 45.5%,transparent 45.6%)}
+.recipe-P04 .identity-field {position:absolute;left:0;right:0;top:1240px;height:520px;background:linear-gradient(to bottom,rgba(16,16,15,0),rgba(16,16,15,.4) 25%,#10100F 100%)}
+.recipe-P04 .hero-group {position:absolute;left:112px;top:742px;width:856px;height:780px;z-index:3;isolation:isolate}
+.recipe-P04 .person {position:absolute;top:0;height:900px;overflow:visible}
+.recipe-P04 .person-image {position:absolute;inset:0;z-index:2}
+.recipe-P04 .person-image img {position:absolute;display:block;max-width:none;transform:scale(1.14);transform-origin:50% 0;filter:grayscale(1) saturate(.18) contrast(.98) brightness(.94);-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.recipe-P04 .rear {z-index:1}
+.recipe-P04 .front {z-index:3}
+.recipe-P04 .tingting {left:85px;width:280px}
+.recipe-P04 .tingting .person-image img {left:0;top:-10px;width:280px;-webkit-mask-image:linear-gradient(to bottom,#000 0,#000 200px,rgba(0,0,0,.74) 320px,transparent 440px);mask-image:linear-gradient(to bottom,#000 0,#000 200px,rgba(0,0,0,.74) 320px,transparent 440px)}
+.recipe-P04 .yuyi {left:435px;width:390px}
+.recipe-P04 .yuyi .person-image img {left:0;top:-5px;width:390px;-webkit-mask-image:linear-gradient(to bottom,#000 0,#000 240px,rgba(0,0,0,.74) 350px,transparent 470px);mask-image:linear-gradient(to bottom,#000 0,#000 240px,rgba(0,0,0,.74) 350px,transparent 470px)}
+.recipe-P04 .cisi {left:-40px;width:620px}
+.recipe-P04 .cisi .person-image img {left:0;top:350px;width:620px;filter:grayscale(1) saturate(.18) contrast(1) brightness(.98);-webkit-mask-image:linear-gradient(to bottom,#000 0,#000 460px,rgba(0,0,0,.78) 580px,transparent 700px);mask-image:linear-gradient(to bottom,#000 0,#000 460px,rgba(0,0,0,.78) 580px,transparent 700px)}
+.recipe-P04 .wizard {left:400px;width:460px}
+.recipe-P04 .wizard .person-image img {left:0;top:310px;width:460px;-webkit-mask-image:linear-gradient(to bottom,#000 0,#000 430px,rgba(0,0,0,.78) 560px,transparent 670px);mask-image:linear-gradient(to bottom,#000 0,#000 430px,rgba(0,0,0,.78) 560px,transparent 670px)}
+.recipe-P04 .identity {position:absolute;z-index:6;display:flex;align-items:flex-start;gap:12px;height:240px}
+.recipe-P04 .identity.right {flex-direction:row-reverse}
+.recipe-P04 .name-tag {display:flex;align-items:center;justify-content:center;min-width:48px;min-height:100px;padding:8px 7px;background:var(--gold);color:var(--ink);font:500 36px/1 "Noto Sans SC",sans-serif;writing-mode:vertical-rl;text-orientation:upright}
+.recipe-P04 .role-block {display:flex;align-items:flex-start;gap:5px;height:240px}
+.recipe-P04 .role-col {display:block;color:var(--white);font:400 23px/1 "Noto Sans SC",sans-serif;writing-mode:vertical-rl;text-orientation:upright;text-align:start;letter-spacing:1px}
+.recipe-P04 .role-token {display:inline-block;white-space:nowrap;writing-mode:horizontal-tb;text-combine-upright:all;letter-spacing:0}
+.recipe-P04 .cisi .role-col, .recipe-P04 .wizard .role-col {color:var(--white)}
+.recipe-P04 .tingting .identity {left:-85px;top:160px}
+.recipe-P04 .yuyi .identity {left:313px;top:110px}
+.recipe-P04 .cisi .identity {left:45px;top:455px}
+.recipe-P04 .wizard .identity {left:344px;top:430px}
+.recipe-P04 .tingting {left:135px}
+.recipe-P04 .tingting .identity {left:-135px}
+.recipe-P04 .yuyi {left:465px}
+.recipe-P04 .yuyi .identity {left:263px}
+.recipe-P04 .cisi .identity {top:555px}
+.recipe-P04 .wizard {left:430px}
+.recipe-P04 .wizard .identity {left:313px;top:530px}
+.recipe-P04 .wizard .role-col {text-shadow:none}
+.recipe-P04 .measure {position:absolute;opacity:0;pointer-events:none}
+.recipe-P04 .tingting .head-box {left:45px;top:80px;width:190px;height:190px}
+.recipe-P04 .tingting .face-box {left:82px;top:126px;width:116px;height:118px}
+.recipe-P04 .tingting .eye-line {left:45px;top:167px;width:190px;height:1px}
+.recipe-P04 .tingting .shoulder {left:20px;top:275px;width:250px;height:1px}
+.recipe-P04 .tingting .body-box {left:20px;top:275px;width:250px;height:165px}
+.recipe-P04 .tingting .visible-box {left:20px;top:80px;width:250px;height:360px}
+.recipe-P04 .yuyi .head-box {left:100px;top:50px;width:190px;height:190px}
+.recipe-P04 .yuyi .face-box {left:132px;top:94px;width:116px;height:118px}
+.recipe-P04 .yuyi .eye-line {left:100px;top:137px;width:190px;height:1px}
+.recipe-P04 .yuyi .shoulder {left:24px;top:270px;width:350px;height:1px}
+.recipe-P04 .yuyi .body-box {left:24px;top:270px;width:350px;height:200px}
+.recipe-P04 .yuyi .visible-box {left:24px;top:50px;width:350px;height:420px}
+.recipe-P04 .cisi .head-box {left:212px;top:270px;width:190px;height:190px}
+.recipe-P04 .cisi .face-box {left:245px;top:315px;width:124px;height:125px}
+.recipe-P04 .cisi .eye-line {left:212px;top:357px;width:190px;height:1px}
+.recipe-P04 .cisi .shoulder {left:40px;top:500px;width:535px;height:1px}
+.recipe-P04 .cisi .body-box {left:40px;top:500px;width:535px;height:200px}
+.recipe-P04 .cisi .visible-box {left:40px;top:270px;width:535px;height:430px}
+.recipe-P04 .wizard .head-box {left:145px;top:230px;width:190px;height:190px}
+.recipe-P04 .wizard .face-box {left:178px;top:276px;width:122px;height:124px}
+.recipe-P04 .wizard .eye-line {left:145px;top:317px;width:190px;height:1px}
+.recipe-P04 .wizard .shoulder {left:0;top:440px;width:426px;height:1px}
+.recipe-P04 .wizard .body-box {left:0;top:440px;width:426px;height:360px}
+.recipe-P04 .wizard .visible-box {left:0;top:230px;width:426px;height:570px}
+.recipe-P04 .hero {height:1840px}
+.recipe-P04 .hero-title {height:auto;min-height:300px}
+.recipe-P04 .hero-sub {height:auto;font-weight:400}
+.recipe-P04 .eyebrow {font-size:40px}
+.recipe-P04 .caption-role, .recipe-P04 .role-col {font-size:26px}
+.recipe-P04 .role-col {text-shadow:none}
+.recipe-P04 .grid {display:none}
+
+/* Flow anchors: long titles move the entire portrait stage, not only the text. */
+.recipe-P04 .hero{height:auto;padding-top:76px;padding-bottom:96px}
+.recipe-P04 .eyebrow{position:relative;top:auto;width:856px}
+.recipe-P04 .hero-copy{position:relative;top:auto;margin-top:80px}
+.recipe-P04 .rule{position:relative;display:block;top:auto;margin-top:64px;margin-bottom:36px}
+.recipe-P04 .hero-surface{position:relative;inset:auto;width:1080px;height:1100px}
+.recipe-P04 .hero-group{top:0}
+.recipe-P04 .identity-field,.recipe-P04 .portrait-identity-field{top:600px}
+</style>
+<div class="recipe recipe-P04">
+<section class="hero" data-reading-zone="V1" data-contract="L01" data-hero-cover><span class="rail" aria-hidden="true"></span><span class="rail-dot" aria-hidden="true"></span>
+      <p class="eyebrow longform-sans-medium">人物主题</p>
+      <div class="hero-copy" data-hero-copy><h1 class="hero-title longform-serif" data-fullwidth-text-axis="V1-copy" data-layout-id="V1-title" data-layout-role="title" data-protected-text="V1-title">四个人物，<span class="gold" data-gold-keyword="hero-title">分层成组</span></h1><p class="hero-sub longform-sans-medium" data-fullwidth-text-axis="V1-copy" data-layout-id="V1-sub" data-layout-role="module-title">以头部等尺度，建立前后景秩序</p></div><span class="rule" aria-hidden="true"></span>
+      <div class="hero-surface" data-hero-surface><div class="backdrop" aria-hidden="true"></div><div class="grid" aria-hidden="true"></div><div class="identity-field" aria-hidden="true"></div>
+        <div class="hero-group" data-hero="portrait-ensemble" data-portrait-recipe="P04" data-hero-ensemble aria-label="四位分层人物构成的首帧主视觉">
+          <figure class="person tingting rear" data-hero-subject="tingting" data-depth="background" data-z-index="1" data-silhouette-cut-mode="lower-fade-only" data-lower-fade-start-y="1017" data-lower-fade-transition-px="240"><div class="identity left" data-hero-subject-caption data-caption-alignment="top" data-caption-orientation="vertical" data-required-protected-tokens="AI"><span class="name-tag" data-hero-subject-label>讲师丁</span><span class="role-block" data-hero-subject-role><span class="role-col">专业领域</span><span class="role-col">专业方向</span><span class="role-col"><span class="role-token" data-no-split-token>AI</span>工作坊</span></span></div><div class="person-image"><img src="{{portrait_1}}" alt="讲师丁卡通形象"></div><i class="measure visible-box" data-hero-visible></i><i class="measure head-box" data-hero-head-box></i><i class="measure face-box" data-hero-face-box></i><i class="measure eye-line" data-hero-eye-line></i><i class="measure shoulder" data-hero-shoulder-below data-hero-shoulder-visible></i><i class="measure body-box" data-hero-body-visible></i></figure>
+          <figure class="person yuyi rear" data-hero-subject="yuyi" data-depth="background" data-z-index="2" data-silhouette-cut-mode="lower-fade-only" data-lower-fade-start-y="1012" data-lower-fade-transition-px="240"><div class="identity right" data-hero-subject-caption data-caption-alignment="top" data-caption-orientation="vertical" data-required-protected-tokens="B端"><span class="name-tag" data-hero-subject-label>讲师丙</span><span class="role-block" data-hero-subject-role><span class="role-col">专业领域</span><span class="role-col">领域<span class="role-token" data-no-split-token>B端</span></span></span></div><div class="person-image"><img src="{{portrait_2}}" alt="讲师丙卡通形象"></div><i class="measure visible-box" data-hero-visible></i><i class="measure head-box" data-hero-head-box></i><i class="measure face-box" data-hero-face-box></i><i class="measure eye-line" data-hero-eye-line></i><i class="measure shoulder" data-hero-shoulder-below data-hero-shoulder-visible></i><i class="measure body-box" data-hero-body-visible></i></figure>
+          <figure class="person cisi front" data-hero-subject="cisi" data-depth="foreground" data-z-index="3" data-silhouette-cut-mode="lower-fade-only" data-lower-fade-start-y="1552" data-lower-fade-transition-px="240"><div class="identity left" data-hero-subject-caption data-caption-alignment="top" data-caption-orientation="vertical" data-required-protected-tokens="12"><span class="name-tag" data-hero-subject-label>讲师乙</span><span class="role-block" data-hero-subject-role><span class="role-col">专业领域</span><span class="role-col"><span class="role-token" data-no-split-token>12</span>年设计</span><span class="role-col">实践教练</span></span></div><div class="person-image"><img src="{{portrait_3}}" alt="讲师乙真人形象"></div><i class="measure visible-box" data-hero-visible></i><i class="measure head-box" data-hero-head-box></i><i class="measure face-box" data-hero-face-box></i><i class="measure eye-line" data-hero-eye-line></i><i class="measure shoulder" data-hero-shoulder-below data-hero-shoulder-visible></i><i class="measure body-box" data-hero-body-visible></i></figure>
+          <figure class="person wizard front" data-hero-subject="wizard" data-depth="foreground" data-z-index="4" data-silhouette-cut-mode="lower-fade-only" data-lower-fade-start-y="1482" data-lower-fade-transition-px="240"><div class="identity right" data-hero-subject-caption data-caption-alignment="top" data-caption-orientation="vertical"><span class="name-tag" data-hero-subject-label>讲师甲</span><span class="role-block" data-hero-subject-role><span class="role-col">跨界</span><span class="role-col">实践方向</span></span></div><div class="person-image"><img src="{{portrait_4}}" alt="讲师甲真人形象"></div><i class="measure visible-box" data-hero-visible></i><i class="measure head-box" data-hero-head-box></i><i class="measure face-box" data-hero-face-box></i><i class="measure eye-line" data-hero-eye-line></i><i class="measure shoulder" data-hero-shoulder-below data-hero-shoulder-visible></i><i class="measure body-box" data-hero-body-visible></i></figure>
+        </div>
+      </div>
+    </section>
+</div>

@@ -1,25 +1,102 @@
 <!doctype html>
-<html lang="zh-CN">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=1080, initial-scale=1">
-    <title>Longform render source</title>
-    <style>
-      /* package_poster_html.py attaches the approved Google Fonts stylesheet.
-         Cover contract: V1 is [data-hero-cover] without a chapter number; its
-         [data-hero-surface] reaches both canvas sides and contains [data-hero].
-         In a full-width reading zone, title/subtitle/body leaves share one
-         data-fullwidth-text-axis value rather than narrowing for decoration. */
-      :root { --canvas: #10100F; --panel: #181816; --title: #F0ECE2; --body: #94918A; --gold: #CCAA77; }
-      * { box-sizing: border-box; }
-      html, body { margin: 0; background: var(--canvas); }
-      #longform-canvas { width: 1080px; min-height: 1920px; position: relative; overflow: hidden; background: var(--canvas); }
-      .longform-serif { font-family: "Noto Serif SC", serif; font-weight: 700; }
-      .longform-sans { font-family: "Noto Sans SC", sans-serif; font-weight: 400; }
-      .longform-sans-medium { font-family: "Noto Sans SC", sans-serif; font-weight: 500; }
-    </style>
-  </head>
-  <body>
-    <main id="longform-canvas" data-canvas-color="#10100F" aria-label="Replace this starter canvas with the case layout."></main>
-  </body>
-</html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=1080,initial-scale=1">
+<title>黑金连续长图种子</title>
+<style>
+/* Editable seed, not a publish-ready poster. Replace sample copy/assets.
+   Keep only the modules selected by the content plan; the sequence is illustrative.
+   Font loading remains the responsibility of package_poster_html.py. */
+html,body{margin:0;background:#10100F}
+#longform-canvas{position:relative;width:1080px;overflow:hidden;background:#10100F;isolation:isolate}
+/* Include once; fonts are loaded by the existing packager. */
+:root{--ink:#10100F;--panel:#181816;--white:#F0ECE2;--gold:#CCAA77;--muted:#94918A;--line:rgba(204,170,119,.24)}
+.recipe{box-sizing:border-box;position:relative;width:1080px;color:var(--white);background:var(--ink);font:400 36px/1.5 "Noto Sans SC",sans-serif}
+.recipe *{box-sizing:border-box}.recipe :is(h1,h2,h3,p,figure){margin:0}
+.recipe .longform-serif{font-family:"Noto Serif SC",serif;font-weight:700}
+.recipe .longform-sans{font-family:"Noto Sans SC",sans-serif;font-weight:400}
+.recipe .longform-sans-medium{font-family:"Noto Sans SC",sans-serif;font-weight:500}
+.recipe .gold,.recipe [data-gold-keyword]{color:var(--gold)}
+.recipe-body{padding:80px 112px 104px}
+.recipe-body .section-label{font:500 40px/1.3 "Noto Sans SC",sans-serif;color:var(--gold)}
+.recipe-body .section-number{position:absolute;right:92px;top:80px;color:rgba(240,236,226,.075);font:500 180px/1 "Noto Sans SC",sans-serif}
+.recipe-body .section-heading{width:856px;margin-top:24px;font:700 64px/1.25 "Noto Serif SC",serif}
+.recipe-body .section-lead{width:856px;margin-top:20px;color:var(--muted);font:400 36px/1.5 "Noto Sans SC",sans-serif}
+.recipe-body .module-content{margin-top:48px;width:856px}
+.recipe-body .body-copy{color:var(--muted);font:400 36px/1.5 "Noto Sans SC",sans-serif}
+.recipe-body .item-title{font:500 44px/1.3 "Noto Sans SC",sans-serif}
+
+/* One continuous master rail; recipe modules do not own separate background frames. */
+.recipe{background:transparent}
+#longform-canvas::before{content:"";position:absolute;left:48px;top:80px;bottom:80px;width:1px;background:rgba(204,170,119,.16);pointer-events:none;z-index:0}
+</style></head><body><main id="longform-canvas" data-canvas-color="#10100F">
+<i data-background-sample aria-hidden="true" style="position:absolute;left:16px;top:16px;width:2px;height:2px"></i>
+<!-- Structure: product-analysis-camp cover; portrait theme image, not a horizontal card. -->
+<style>
+.recipe-L01 .cover{position:relative;padding:80px 112px 0;isolation:isolate}
+.recipe-L01 .eyebrow{color:var(--gold);font:500 40px/1.3 "Noto Sans SC",sans-serif}
+.recipe-L01 .copy{position:relative;margin-top:80px;z-index:2;width:856px}
+.recipe-L01 h1{width:856px;font:700 116px/1.16 "Noto Serif SC",serif;letter-spacing:-3px}
+.recipe-L01 .sub{width:856px;margin-top:36px;color:var(--muted);font:400 40px/1.5 "Noto Sans SC",sans-serif}
+.recipe-L01 .surface{position:relative;margin:-144px -112px 0;width:1080px;height:1280px;z-index:1}
+.recipe-L01 .visual{width:100%;height:100%;background:var(--hero-image,none) center/cover no-repeat;mask-image:linear-gradient(to bottom,transparent,#000 16%,#000 78%,transparent);filter:saturate(.65) brightness(.85)}
+.recipe-L01 .surface::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,rgba(16,16,15,.58),rgba(16,16,15,.46) 18%,transparent 38%)}
+</style>
+<div class="recipe recipe-L01">
+  <section class="cover" data-reading-zone="L01" data-contract="L01" data-hero-cover>
+    <p class="eyebrow">活动或项目语境</p>
+    <div class="copy" data-hero-copy>
+      <h1 data-layout-role="title" data-fullwidth-text-axis="L01-copy" data-protected-text>让<span data-gold-keyword="hero-title">核心主张</span>成为第一阅读落点</h1>
+      <p class="sub" data-layout-role="body" data-fullwidth-text-axis="L01-copy">补充新的信息，不复述眉题和主标题。</p>
+    </div>
+    <div class="surface" data-hero-surface><div class="visual" data-hero="imagegen" aria-label="当前文案对应的竖向暗场景"></div></div>
+  </section>
+</div>
+
+<style>
+.recipe-L04 .grid {display:grid;grid-template-columns:repeat(2,416px);gap:24px}
+.recipe-L04 .tile {padding:32px;min-height:320px;border:1px solid var(--line);background:var(--panel)}
+.recipe-L04 .index {display:block;margin-bottom:24px;color:var(--muted);font-size:32px}
+.recipe-L04 .body-copy {margin-top:24px}
+</style>
+<div class="recipe recipe-L04">
+<section class="recipe-body" data-reading-zone="L04" data-contract="L04" data-major-module="L04">
+  <p class="section-label" data-chapter-label="L04">THE METHOD</p>
+  <span class="section-number" data-layout-chapter="L04" aria-hidden="true">01</span>
+  <h2 class="section-heading" data-layout-role="module-title" data-fullwidth-text-axis="L04-axis"><span data-protected-text>并列内容</span></h2>
+  <p class="section-lead" data-layout-role="body" data-fullwidth-text-axis="L04-axis">用一句补充说明交代这些同级内容回答的问题。</p>
+<div class="module-content"><div class="grid"><article class="tile" data-layout-container="L04-item-1"><span class="index" data-internal-index>01</span><h3 class="item-title" data-layout-role="module-title">平级内容一</h3><p class="body-copy" data-layout-role="body">填写这一项的简短说明。</p></article><article class="tile" data-layout-container="L04-item-2"><span class="index" data-internal-index>02</span><h3 class="item-title" data-layout-role="module-title">平级内容二</h3><p class="body-copy" data-layout-role="body">填写这一项的简短说明。</p></article><article class="tile" data-layout-container="L04-item-3"><span class="index" data-internal-index>03</span><h3 class="item-title" data-layout-role="module-title">平级内容三</h3><p class="body-copy" data-layout-role="body">填写这一项的简短说明。</p></article><article class="tile" data-layout-container="L04-item-4"><span class="index" data-internal-index>04</span><h3 class="item-title" data-layout-role="module-title">平级内容四</h3><p class="body-copy" data-layout-role="body">填写这一项的简短说明。</p></article></div></div>
+</section>
+</div>
+
+<style>
+.recipe-L14 .benefit {display:grid;grid-template-columns:90px 1fr;gap:30px;padding:40px 0;border-bottom:1px solid var(--line)}
+.recipe-L14 .index {font-size:36px;color:var(--gold)}
+.recipe-L14 .body-copy {margin-top:16px}
+</style>
+<div class="recipe recipe-L14">
+<section class="recipe-body" data-reading-zone="L14" data-contract="L14" data-major-module="L14">
+  <p class="section-label" data-chapter-label="L14">TAKE AWAYS</p>
+  <span class="section-number" data-layout-chapter="L14" aria-hidden="true">02</span>
+  <h2 class="section-heading" data-layout-role="module-title" data-fullwidth-text-axis="L14-axis"><span data-protected-text>价值清单</span></h2>
+  <p class="section-lead" data-layout-role="body" data-fullwidth-text-axis="L14-axis">用一句说明这些交付共同指向的结果。</p>
+<div class="module-content"><article class="benefit"><span class="index" data-internal-index>01</span><div><h3 class="item-title" data-layout-role="module-title">一项明确交付</h3><p class="body-copy" data-layout-role="body">说明这项交付对参与者的价值。</p></div></article><article class="benefit"><span class="index" data-internal-index>02</span><div><h3 class="item-title" data-layout-role="module-title">一项明确交付</h3><p class="body-copy" data-layout-role="body">说明这项交付对参与者的价值。</p></div></article><article class="benefit"><span class="index" data-internal-index>03</span><div><h3 class="item-title" data-layout-role="module-title">一项明确交付</h3><p class="body-copy" data-layout-role="body">说明这项交付对参与者的价值。</p></div></article></div>
+</section>
+</div>
+
+<style>
+.recipe-L10 .cta {display:grid;grid-template-columns:1fr 200px;gap:48px;padding:32px;align-items:center;border:1px solid var(--line);background:var(--panel)}
+.recipe-L10 .price {font:700 112px/1 "Noto Serif SC",serif;color:var(--gold);margin-top:24px}
+.recipe-L10 .meta {font-size:26px;color:var(--muted)}
+.recipe-L10 .action {margin-top:28px;font-size:40px;font-weight:500}
+.recipe-L10 .qr {width:200px;height:200px;background:var(--white);color:var(--ink);display:grid;place-items:center;text-align:center;font-size:26px;padding:16px}
+</style>
+<div class="recipe recipe-L10">
+<section class="recipe-body" data-reading-zone="L10" data-contract="L10" data-major-module="L10">
+  <p class="section-label" data-chapter-label="L10">JOIN US</p>
+  <span class="section-number" data-layout-chapter="L10" aria-hidden="true">03</span>
+  <h2 class="section-heading" data-layout-role="module-title" data-fullwidth-text-axis="L10-axis"><span data-protected-text>下一步</span></h2>
+  <p class="section-lead" data-layout-role="body" data-fullwidth-text-axis="L10-axis">说明读者需要提交或确认什么。</p>
+<div class="module-content"><div class="cta" data-layout-container="signup"><div><p class="meta" data-layout-role="meta">仅填写原文已有的价格信息</p><p class="price" data-layout-role="price" data-cta-group="signup">金额</p><p class="action" data-layout-role="action">报名参加</p></div><div class="qr" data-layout-role="qr" data-cta-group="signup">待提供二维码</div></div></div>
+</section>
+</div>
+
+</main></body></html>

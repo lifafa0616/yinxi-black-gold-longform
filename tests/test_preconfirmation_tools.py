@@ -398,6 +398,22 @@ class PreconfirmationToolTests(unittest.TestCase):
 
         self.assertEqual(issues, [])
 
+    def test_theme_hero_surface_starts_near_title_bottom(self):
+        hero = {
+            "strategy": "imagegen",
+            "title_bbox": [112, 212, 856, 362],
+            "visible_bbox": [0, 550, 1080, 1520],
+            "surface_bbox": [0, 550, 1080, 1520],
+        }
+        issues = []
+        VERIFY_CASE_LAYOUT.validate_theme_hero_title_overlap(hero, issues)
+        self.assertEqual(issues, [])
+
+        hero["surface_bbox"][1] = 780
+        issues = []
+        VERIFY_CASE_LAYOUT.validate_theme_hero_title_overlap(hero, issues)
+        self.assertTrue(any("title bottom" in issue for issue in issues))
+
     def test_plan_gold_keyword_check_requires_separate_keyword_and_source_rows(self):
         with tempfile.TemporaryDirectory() as directory:
             plan = Path(directory) / "plan.md"
